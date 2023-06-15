@@ -1,15 +1,15 @@
-import asyncio
-import os
-from typing import List
+# import asyncio
+# import os
+# from typing import List
 
 import omni.client
 import omni.ext
 import omni.ui as ui
 import omni.usd
-from pxr import Gf, Usd, UsdGeom, Sdf
+# from pxr import Gf, Usd, UsdGeom, Sdf
 
 from .gdtfImporter import GDTFImporter
-from .gltfImporter import GLTFImporter
+# from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
 
@@ -22,9 +22,7 @@ class MfOvGdtfExtension(omni.ext.IExt):
                 #    asyncio.ensure_future(_gltf_import_and_reference(self._input.model.get_value_as_string()))
 
                 def on_gdtf_import():
-                    GDTFImporter.convert(
-                        self._input.model.get_value_as_string()
-                    )
+                    _import_gdtf(self._input.model.get_value_as_string())
 
                 self._input = ui.StringField()
                 ui.Button("Import GDTF", clicked_fn=on_gdtf_import)
@@ -33,6 +31,12 @@ class MfOvGdtfExtension(omni.ext.IExt):
         pass
 
 
+def _import_gdtf(filepath: str):
+    output_dir = USDTools.get_stage_directory() + "gdtf/"
+    GDTFImporter.convert(filepath, output_dir)
+
+
+"""
 async def _gltf_import_and_reference(input_dir: str):
     filenames: List[str] = ["base", "yoke", "head"]
     input_ext = "glb"
@@ -64,3 +68,4 @@ def _gltf_reference(files: List[str]):
         for xform_op in base_xform_ordered_ops:
             if xform_op.GetOpType() == UsdGeom.XformOp.TypeScale:
                 xform_op.Set(Gf.Vec3f(scale, scale, scale))
+"""
