@@ -8,6 +8,7 @@ import omni.ui as ui
 import omni.usd
 from pxr import Gf, Usd, UsdGeom, Sdf
 
+from .gdtfImporter import GDTFImporter
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -17,11 +18,16 @@ class MfOvGdtfExtension(omni.ext.IExt):
         self._window = ui.Window("GDTF Importer TMP", width=300, height=100)
         with self._window.frame:
             with ui.VStack():
-                def on_gltf_import():
-                    asyncio.ensure_future(_gltf_import_and_reference(self._input.model.get_value_as_string()))
+                # def on_gltf_import():
+                #    asyncio.ensure_future(_gltf_import_and_reference(self._input.model.get_value_as_string()))
+
+                def on_gdtf_import():
+                    GDTFImporter.convert(
+                        self._input.model.get_value_as_string()
+                    )
 
                 self._input = ui.StringField()
-                ui.Button("Import GLTF", clicked_fn=on_gltf_import)
+                ui.Button("Import GDTF", clicked_fn=on_gdtf_import)
 
     def on_shutdown(self):
         pass

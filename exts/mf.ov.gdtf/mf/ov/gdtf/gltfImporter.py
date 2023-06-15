@@ -8,7 +8,7 @@ import omni.kit.asset_converter as converter
 
 class GLTFImporter:
     async def convert(filenames: List[str], input_dir: str, input_ext: str, output_dir: str,
-                                 output_ext: str = "usd", timeout: int = 10) -> List[str]:
+                      output_ext: str = "usd", timeout: int = 10) -> List[str]:
         _, files_in_output_dir = omni.client.list(output_dir)  # Ignoring omni.client.Result
         relative_paths_in_output_dir = [x.relative_path for x in files_in_output_dir]
         imported: List[str] = []
