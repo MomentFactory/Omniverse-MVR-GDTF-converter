@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import omni.client
 import omni.ext
@@ -25,6 +26,12 @@ class MfOvGdtfExtension(omni.ext.IExt):
 
 
 def _import_gdtf(filepath: str):
+    if filepath[:12] == "omniverse://":
+        # TODO: Cannot Unzip directly from omniverse, might have to download the file locally as tmp
+        logger = logging.getLogger(__name__)
+        logger.error("Cannot import directly from Omniverse")
+        return
+
     output_dir = USDTools.get_stage_directory() + "gdtf/"
     asyncio.ensure_future(GDTFImporter.convert(filepath, output_dir))
 
