@@ -1,17 +1,19 @@
 import asyncio
 import logging
-import os
 from typing import List
 
 import omni.client
 import omni.kit.asset_converter as converter
+
+from .filepathUtility import Filepath
 
 
 class GLTFImporter:
     async def convert(filepaths: List[str], output_dir: str, output_ext: str = "usd", timeout: int = 10) -> List[str]:
         _, files_in_output_dir = omni.client.list(output_dir)  # Ignoring omni.client.Result
         relative_paths_in_output_dir = [x.relative_path for x in files_in_output_dir]
-        filenames: List[str] = [os.path.splitext(os.path.basename(x))[0] for x in filepaths]
+        files: List[Filepath] = [Filepath(x) for x in filepaths]
+        filenames: List[str] = [x.filename for x in files]
 
         imported: List[str] = []
         for i, filename in enumerate(filenames):
