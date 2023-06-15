@@ -1,92 +1,141 @@
-# Omniverse MVR Extension2
+# *Omniverse Kit* Extensions Project Template
 
+This project is a template for developing extensions for *Omniverse Kit*.
 
+# Getting Started
 
-## Getting started
+## Install Omniverse and some Apps
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+1. Install *Omniverse Launcher*: [download](https://www.nvidia.com/en-us/omniverse/download)
+2. Install and launch one of *Omniverse* apps in the Launcher. For instance: *Code*.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Add a new extension to your *Omniverse App*
 
-## Add your files
+1. Fork and clone this repo, for example in `C:\projects\kit-extension-template`
+2. In the *Omniverse App* open extension manager: *Window* &rarr; *Extensions*.
+3. In the *Extension Manager Window* open a settings page, with a small gear button in the top left bar.
+4. In the settings page there is a list of *Extension Search Paths*. Add cloned repo `exts` subfolder there as another search path: `C:\projects\kit-extension-template\exts`
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+![Extension Manager Window](/images/add-ext-search-path.png)
 
+5. Now you can find `omni.hello.world` extension in the top left search bar. Select and enable it.
+6. "My Window" window will pop up. *Extension Manager* watches for any file changes. You can try changing some code in this extension and see them applied immediately with a hotreload.
+
+### Few tips
+
+* Now that `exts` folder was added to the search you can add new extensions to this folder and they will be automatically found by the *App*.
+* Look at the *Console* window for warnings and errors. It also has a small button to open current log file.
+* All the same commands work on linux. Replace `.bat` with `.sh` and `\` with `/`.
+* Extension name is a folder name in `exts` folder, in this example: `omni.hello.world`. 
+* Most important thing extension has is a config file: `extension.toml`, take a peek.
+
+## Next Steps: Alternative way to add a new extension
+
+To get a better understanding and learn a few other things, we recommend following next steps:
+
+1. Remove search path added in the previous section.
+1. Open this cloned repo using Visual Studio Code: `code C:\projects\kit-extension-template`. It will suggest installing a few extensions to improve python experience.
+2. In the terminal (CTRL + \`) run `link_app.bat` (more in [Linking with an *Omniverse* app](#linking-with-an-omniverse-app) section).
+3. Run this app with `exts` folder added as an extensions search path and new extension enabled:
+
+```bash
+> app\omni.code.bat --ext-folder exts --enable omni.hello.world
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/momentfactory/products/xagora/omniverse/omniverse-mvr-extension2.git
-git branch -M main
-git push -uf origin main
+
+- `--ext-folder [path]` - adds new folder to the search path
+- `--enable [extension]` - enables an extension on startup.
+
+Use `-h` for help:
+
+```bash
+> app\omni.code.bat -h
 ```
 
-## Integrate with your tools
+4. After the *App* started you should see:
+    * new "My Window" window popup.
+    * extension search paths in *Extensions* window as in the previous section.
+    * extension enabled in the list of extensions.
 
-- [ ] [Set up project integrations](https://gitlab.com/momentfactory/products/xagora/omniverse/omniverse-mvr-extension2/-/settings/integrations)
+5. If you look inside `omni.code.bat` or any other *Omniverse App*, they all run *Omniverse Kit* (`kit.exe`). *Omniverse Kit* is the Omniverse Application runtime that powers *Apps* build out of extensions.
+Think of it as `python.exe`. It is a small runtime, that enables all the basics, like settings, python, logging and searches for extensions. **Everything else is an extension.** You can run only this new extension without running any big *App* like *Code*:
 
-## Collaborate with your team
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```bash
+> app\kit\kit.exe --ext-folder exts --enable omni.hello.world
+```
 
-## Test and Deploy
+It starts much faster and will only have extensions enabled that are required for this new extension (look at  `[dependencies]` section of `extension.toml`). You can enable more extensions: try adding `--enable omni.kit.window.extensions` to have extensions window enabled (yes, extension window is an extension too!):
 
-Use the built-in continuous integration in GitLab.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+> app\kit\kit.exe --ext-folder exts --enable omni.hello.world --enable omni.kit.window.extensions
+```
 
-***
+You should see a menu in the top left. From here you can enable more extensions from the UI. 
 
-# Editing this README
+### Few tips
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+* In the *Extensions* window, press *Bread* button near the search bar and select *Show Extension Graph*. It will show how the current *App* comes to be: all extensions and dependencies.
+* Extensions system documentation: http://omniverse-docs.s3-website-us-east-1.amazonaws.com/kit-sdk/104.0/docs/guide/extensions.html
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+# Running Tests
 
-## Name
-Choose a self-explaining name for your project.
+To run tests we run a new process where only the tested extension (and it's dependencies) is enabled. Like in example above + testing system (`omni.kit.test` extension). There are 2 ways to run extension tests:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+1. Run: `app\kit\test_ext.bat omni.hello.world  --ext-folder exts`
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+That will run a test process with all tests and exit. For development mode pass `--dev`: that will open test selection window. As everywhere, hotreload also works in this mode, give it a try by changing some code!
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+2. Alternatively, in *Extension Manager* (*Window &rarr; Extensions*) find your extension, click on *TESTS* tab, click *Run Test*
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+For more information about testing refer to: [testing doc](http://omniverse-docs.s3-website-us-east-1.amazonaws.com/kit-sdk/104.0/docs/guide/ext_testing.html).
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+# Linking with an *Omniverse* app
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+For a better developer experience, it is recommended to create a folder link named `app` to the *Omniverse Kit* app installed from *Omniverse Launcher*. A convenience script to use is included.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Run:
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```bash
+> link_app.bat
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+If successful you should see `app` folder link in the root of this repo.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+If multiple Omniverse apps is installed script will select recommended one. Or you can explicitly pass an app:
 
-## License
-For open source projects, say how it is licensed.
+```bash
+> link_app.bat --app create
+```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+You can also just pass a path to create link to:
+
+```bash
+> link_app.bat --path "C:/Users/bob/AppData/Local/ov/pkg/create-2021.3.4"
+```
+
+# Adding a new extension
+
+Adding a new extension is as simple as copying and renaming existing one:
+
+1. copy `exts/omni.hello.world` to `exts/[new extension name]`
+2. rename python module (namespace) in `exts/[new extension name]/omni/hello/world` to `exts/[new extension name]/[new python module]`
+3. update `exts/[new extension name]/config/extension.toml`, most importantly specify new python module to load:
+
+```toml
+[[python.module]]
+name = "[new python module]"
+```
+
+No restart is needed, you should be able to find and enable `[new extension name]` in extension manager.
+
+# Sharing extensions
+
+To make extension available to other users use [Github Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
+
+1. Make sure the repo has [omniverse-kit-extension](https://github.com/topics/omniverse-kit-extension) topic set for auto discovery.
+2. For each new release increment extension version (in `extension.toml`) and update the changelog (in `docs/CHANGELOG.md`). [Semantic versionning](https://semver.org/) must be used to express severity of API changes.
+
+# Contributing
+The source code for this repository is provided as-is and we are not accepting outside contributions.
