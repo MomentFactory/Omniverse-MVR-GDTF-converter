@@ -4,21 +4,23 @@ from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
+from .filepathUtility import Filepath
 from .gltfImporter import GLTFImporter
 
 
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
 
-    async def convert(filepath: str, output_dir: str) -> bool:
+    async def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> bool:
         try:
-            with ZipFile(filepath, 'r') as archive:
+            with ZipFile(file.fullpath, 'r') as archive:
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
                 await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
+                GDTFImporter._create_gdtf_usd(output_dir, file.filename, output_ext)
         except Exception as e:
             logger = logging.getLogger(__name__)
-            logger.error(f"Failed to parse gdtf file at {filepath}. Make sure it is not corrupt. {e}")
+            logger.error(f"Failed to parse gdtf file at {file.fullpath}. Make sure it is not corrupt. {e}")
             return False
 
         return True

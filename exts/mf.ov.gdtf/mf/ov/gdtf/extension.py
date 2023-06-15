@@ -44,7 +44,7 @@ def _import_gdtf(filepath: str):
         output_dir = USDTools.get_stage_directory()
 
     output_dir += "gdtf/"
-    asyncio.ensure_future(GDTFImporter.convert(filepath, output_dir))
+    asyncio.ensure_future(GDTFImporter.convert(file, output_dir))
 
 
 """
