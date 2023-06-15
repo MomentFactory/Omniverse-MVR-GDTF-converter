@@ -1,0 +1,25 @@
+[package]
+version = "0.1.0"
+
+title = "MF GDTF converter"
+description = "Brings the support of GDTF (General Device Type Format) files."
+authors = ["Moment Factory","Frederic Lestage"]
+
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+repository = "https://github.com/MomentFactory/Omniverse-MVR-extension2"
+
+category = "Rendering"
+keywords = ["MVR", "GDTF", "GLTF", "GLB"]
+
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[[python.module]]
+name = "mf.ov.gdtf"
+
+[python.pipapi]
+requirements = [
+    "unidecode"
+]
+use_online_index = true
