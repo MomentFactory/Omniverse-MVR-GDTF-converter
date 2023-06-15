@@ -7,4 +7,5 @@ class Filepath:
         self.filename, self.ext = os.path.splitext(self.basename)
 
     def is_nucleus_path(self) -> bool:
+        # TODO: Replace with omni utility method
         return self.directory[:12] == "omniverse://"
