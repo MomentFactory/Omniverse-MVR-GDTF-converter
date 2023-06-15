@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 from .filepathUtility import Filepath
 from .gltfImporter import GLTFImporter
+from .USDTools import USDTools
 
 
 class GDTFImporter:
@@ -25,6 +26,7 @@ class GDTFImporter:
 
         return True
 
+    #region convert gltf
     async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str):
         nodes_model: List[ET.Element] = GDTFImporter._get_model_nodes(root)
         gltf_filenames: List[str] = GDTFImporter._get_valid_gltf_filenames(nodes_model)
@@ -78,3 +80,8 @@ class GDTFImporter:
     async def _convert_gltf(filepaths: List[str], gdtf_output_dir):
         gltf_output_dir = gdtf_output_dir + "gltf/"
         return await GLTFImporter.convert(filepaths, gltf_output_dir)
+    #endregion
+
+    def _create_gdtf_usd(output_dir: str, filename: str, ext: str):
+        url: str = output_dir + filename + ext
+        _ = USDTools.get_or_create_stage(url)
