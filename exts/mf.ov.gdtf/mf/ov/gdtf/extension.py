@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import omni.client
 import omni.ext
@@ -32,7 +33,15 @@ def _import_gdtf(filepath: str):
         logger.error("Cannot import directly from Omniverse")
         return
 
-    output_dir = USDTools.get_stage_directory() + "gdtf/"
+    stage_dir = USDTools.get_stage_directory()
+    if stage_dir == "":
+        output_dir = os.path.dirname(filepath) + "\\"
+        logger = logging.getLogger(__name__)
+        logger.warn(f"Current stage is anonymous, output files in filesystem at {output_dir} instead of in nucleus")
+    else:
+        output_dir = USDTools.get_stage_directory()
+
+    output_dir += "\\gdtf\\"
     asyncio.ensure_future(GDTFImporter.convert(filepath, output_dir))
 
 
