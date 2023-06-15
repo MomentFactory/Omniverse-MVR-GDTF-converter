@@ -2,6 +2,7 @@ import os
 
 class Filepath:
     def __init__(self, filepath: str):
+        self.fullpath = filepath
         self.directory = os.path.dirname(filepath) + "/"
         self.basename = os.path.basename(filepath)
         self.filename, self.ext = os.path.splitext(self.basename)
