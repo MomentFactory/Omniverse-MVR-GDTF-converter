@@ -4,7 +4,7 @@ from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
-from pxr import Usd, UsdGeom
+from pxr import Gf, Usd, UsdGeom
 
 from .filepathUtility import Filepath
 from .gdtfUtil import Model, GeometryAxis
@@ -90,6 +90,7 @@ class GDTFImporter:
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
         xform_refs: List[UsdGeom.Xform] = GDTFImporter._add_gltf_reference(stage, geometries)
+        GDTFImporter._apply_gltf_scale(stage, xform_refs)
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)
@@ -127,5 +128,18 @@ class GDTFImporter:
             relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
             xform: UsdGeom.Xform = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
             xform_refs.append(xform)
+
+        stage.Save()
         return xform_refs
+
+    def _apply_gltf_scale(stage: Usd.Stage, xforms: List[UsdGeom.Xform]):
+        stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
+        scale_offset = UsdGeom.LinearUnits.millimeters
+        scale = scale_offset / stage_metersPerUnit
+        scaleOp = Gf.Vec3f(scale, scale, scale)
+
+        for xform in xforms:
+            USDTools.apply_xform_op(xform, UsdGeom.XformOp.TypeScale, scaleOp)
+
+        stage.Save()
     # endregion

@@ -1,8 +1,9 @@
 import omni.usd
 from pxr import Usd, UsdGeom
+from typing import List
 from unidecode import unidecode
 
-from pxr import Tf
+from pxr import Gf,  Tf
 
 
 class USDTools:
@@ -42,5 +43,15 @@ class USDTools:
         xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
         references: Usd.References = xform_ref_prim.GetReferences()
         references.AddReference(ref_path_relative)
-        stage.Save()
         return xform_ref
+
+    def apply_xform_op(xform: UsdGeom.Xform, xformOp: UsdGeom.XformOp, value: Gf.Vec3f):
+        xform_ordered_ops: List[UsdGeom.XformOp] = xform.GetOrderedXformOps()
+        found_op = False
+        for xform_op in xform_ordered_ops:
+            if xform_op.GetOpType() == xformOp:
+                xform_op.Set(value)
+                found_op = True
+
+        if not found_op:
+            xform.AddScaleOp().Set(value)
