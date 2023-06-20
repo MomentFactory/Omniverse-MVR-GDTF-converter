@@ -41,7 +41,7 @@ class Model:
         self._converted_filepath = path
 
     def get_converted_filepath(self) -> Filepath:
-        self._converted_filepath
+        return self._converted_filepath
 
 
 class GeometryAxis:
