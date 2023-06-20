@@ -2,6 +2,7 @@ import omni.usd
 from pxr import Usd, UsdGeom
 from unidecode import unidecode
 
+import omni.usd
 from pxr import Tf
 
 
@@ -16,8 +17,9 @@ class USDTools:
         context = USDTools.get_context()
         return context.get_stage()
 
-    def get_stage_directory() -> str:
-        stage: Usd.Stage = USDTools.get_stage()
+    def get_stage_directory(stage: Usd.Stage = None) -> str:
+        if stage is None:
+            stage = USDTools.get_stage()
         root_layer = stage.GetRootLayer()
         repository_path = root_layer.repositoryPath
         dir_index = repository_path.rfind("/")
