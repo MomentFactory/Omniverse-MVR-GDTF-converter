@@ -39,7 +39,6 @@ class Model:
 
     def set_converted_filepath(self, path: Filepath):
         self._converted_filepath = path
-        print(self._converted_filepath.fullpath)
 
     def get_converted_filepath(self) -> Filepath:
         self._converted_filepath
@@ -47,8 +46,8 @@ class Model:
 
 class GeometryAxis:
     def __init__(self, node: ET.Element):
-        self._name = node.attrib["Name"]
-        self._model_id = get_attrib_if_exists(node, "Model")
+        self._name: str = node.attrib["Name"]
+        self._model_id: str = get_attrib_if_exists(node, "Model")
         # self._xform = node.attrib["Position"]
 
     def get_name(self) -> str:
