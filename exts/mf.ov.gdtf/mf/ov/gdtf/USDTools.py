@@ -2,7 +2,6 @@ import omni.usd
 from pxr import Usd, UsdGeom
 from unidecode import unidecode
 
-import omni.usd
 from pxr import Tf
 
 
@@ -36,3 +35,14 @@ class USDTools:
             stage.SetDefaultPrim(default_prim)
             stage.Save()
             return stage
+
+    def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str, stage_subpath: str) -> UsdGeom.Xform:
+        _: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
+        print(stage_path + stage_subpath)
+        xform_ref: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path + stage_subpath)
+        xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
+        stage.Save()
+        references: Usd.References = xform_ref_prim.GetReferences()
+        references.AddReference(ref_path_relative)
+        stage.Save()
+        return xform_ref

@@ -48,7 +48,7 @@ class GeometryAxis:
     def __init__(self, node: ET.Element):
         self._name: str = node.attrib["Name"]
         self._model_id: str = get_attrib_if_exists(node, "Model")
-        # self._xform = node.attrib["Position"]
+        self._position = node.attrib["Position"]
 
     def get_name(self) -> str:
         return self._name
@@ -57,6 +57,9 @@ class GeometryAxis:
         if self._model_id is not None:
             return self._model_id
         return self._name
+
+    def get_position(self) -> str:
+        return self._position
 
     def set_model(self, model: Model):
         self._model = model

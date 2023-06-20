@@ -89,7 +89,7 @@ class GDTFImporter:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
-        GDTFImporter._add_gltf_payload(stage, geometries)
+        GDTFImporter._add_gltf_reference(stage, geometries)
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)
@@ -119,8 +119,10 @@ class GDTFImporter:
                 geometries.append(geometry)
                 GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
 
-    def _add_gltf_payload(stage: Usd.Stage, geometries: List[GeometryAxis]):
-        stage_path = Filepath(USDTools.get_stage_directory())
+    def _add_gltf_reference(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        stage_path = Filepath(USDTools.get_stage_directory(stage))
         for geometry in geometries:
-            relative_path: str = 
+            model: Model = geometry.get_model()
+            relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
+            USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
     # endregion
