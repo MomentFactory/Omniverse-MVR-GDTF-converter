@@ -6,30 +6,34 @@ import omni.client
 import omni.kit.asset_converter as converter
 
 from .filepathUtility import Filepath
+from .gdtfUtil import Model
 
 
 class GLTFImporter:
-    async def convert(filepaths: List[str], output_dir: str, output_ext: str = "usd", timeout: int = 10) -> List[str]:
+    async def convert(models: List[Model], output_dir: str, output_ext: str = "usd", timeout: int = 10) -> List[Model]:
         _, files_in_output_dir = omni.client.list(output_dir)  # Ignoring omni.client.Result
         relative_paths_in_output_dir = [x.relative_path for x in files_in_output_dir]
-        files: List[Filepath] = [Filepath(x) for x in filepaths]
-        filenames: List[str] = [x.filename for x in files]
 
-        imported: List[str] = []
-        for i, filename in enumerate(filenames):
+        converted_models: List[Model] = []
+
+        for model in models:
+            file: Filepath = Filepath(model.get_tmpdir_filepath())
+            filename = file.filename
             output_file = filename + "." + output_ext
             if output_file not in relative_paths_in_output_dir:
-                input_path = filepaths[i]
+                input_path = file.fullpath
                 output_path = output_dir + output_file
                 try:
                     success = await asyncio.wait_for(GLTFImporter._convert(input_path, output_path), timeout=timeout)
                 except asyncio.TimeoutError:
                     success = False
                 if success:
-                    imported.append(output_file)
+                    model.set_converted_filepath(output_file)
+                    converted_models.append(model)
             else:
-                imported.append(output_file)
-        return imported
+                model.set_converted_filepath(output_file)
+                converted_models.append(model)
+        return converted_models
 
     async def _convert(input_path: str, output_path: str) -> bool:
         converter_context = converter.AssetConverterContext()

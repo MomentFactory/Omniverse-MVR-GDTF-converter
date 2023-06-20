@@ -22,8 +22,25 @@ class Model:
     def get_file(self) -> str:
         return self._file
 
+    def set_tmpdir_filepath(self, path: str):
+        self._tmpdir_filepath = path
+
+    def get_tmpdir_filepath(self) -> str:
+        return self._tmpdir_filepath
+
+    def set_converted_filepath(self, path: str):
+        self._converted_filepath = path
+
+    def get_converted_filepath(self) -> str:
+        self._converted_filepath
+
 class GeometryAxis:
     def __init__(self, node: ET.Element):
         self._name = node.attrib["Name"]
         self._model = get_attrib_if_exists(node, "Model")
         # self._xform = node.attrib["Position"]
+
+    def get_model_id(self) -> str:
+        if self._model is not None:
+            return self._model
+        return self._name
