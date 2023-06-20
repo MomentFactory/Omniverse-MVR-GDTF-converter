@@ -68,10 +68,10 @@ class GDTFImporter:
 
             if filepath_glb in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_glb, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
-                model.set_tmpdir_filepath(tmp_export_path)
+                model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_gltf in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_gltf, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
-                model.set_tmpdir_filepath(tmp_export_path)
+                model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_3ds:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"Found unsupported 3ds file for {filename}, skipping.")

@@ -1,6 +1,7 @@
 # import numpy as np
 import xml.etree.ElementTree as ET
 
+from .filepathUtility import Filepath
 from .USDTools import USDTools
 
 
@@ -30,31 +31,32 @@ class Model:
     def get_file(self) -> str:
         return self._file
 
-    def set_tmpdir_filepath(self, path: str):
+    def set_tmpdir_filepath(self, path: Filepath):
         self._tmpdir_filepath = path
 
-    def get_tmpdir_filepath(self) -> str:
+    def get_tmpdir_filepath(self) -> Filepath:
         return self._tmpdir_filepath
 
-    def set_converted_filepath(self, path: str):
+    def set_converted_filepath(self, path: Filepath):
         self._converted_filepath = path
+        print(self._converted_filepath.fullpath)
 
-    def get_converted_filepath(self) -> str:
+    def get_converted_filepath(self) -> Filepath:
         self._converted_filepath
 
 
 class GeometryAxis:
     def __init__(self, node: ET.Element):
         self._name = node.attrib["Name"]
-        self._model = get_attrib_if_exists(node, "Model")
+        self._model_id = get_attrib_if_exists(node, "Model")
         # self._xform = node.attrib["Position"]
 
     def get_name(self) -> str:
         return self._name
 
     def get_model_id(self) -> str:
-        if self._model is not None:
-            return self._model
+        if self._model_id is not None:
+            return self._model_id
         return self._name
 
     def set_model(self, model: Model):

@@ -17,21 +17,21 @@ class GLTFImporter:
         converted_models: List[Model] = []
 
         for model in models:
-            file: Filepath = Filepath(model.get_tmpdir_filepath())
+            file: Filepath = model.get_tmpdir_filepath()
             filename = file.filename
             output_file = filename + "." + output_ext
+            output_path = output_dir + output_file
             if output_file not in relative_paths_in_output_dir:
                 input_path = file.fullpath
-                output_path = output_dir + output_file
                 try:
                     success = await asyncio.wait_for(GLTFImporter._convert(input_path, output_path), timeout=timeout)
                 except asyncio.TimeoutError:
                     success = False
                 if success:
-                    model.set_converted_filepath(output_file)
+                    model.set_converted_filepath(Filepath(output_path))
                     converted_models.append(model)
             else:
-                model.set_converted_filepath(output_file)
+                model.set_converted_filepath(Filepath(output_path))
                 converted_models.append(model)
         return converted_models
 
