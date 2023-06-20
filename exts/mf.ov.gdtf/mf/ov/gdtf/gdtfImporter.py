@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 from .filepathUtility import Filepath
+from .gdtfUtil import Model
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -18,7 +19,8 @@ class GDTFImporter:
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
                 await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
-                GDTFImporter._create_gdtf_usd(output_dir, file.filename, output_ext)
+                GDTFImporter._convert_gdtf_usd(output_dir, file.filename, output_ext)
+
         except Exception as e:
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to parse gdtf file at {file.fullpath}. Make sure it is not corrupt. {e}")
@@ -28,29 +30,29 @@ class GDTFImporter:
 
     #region convert gltf
     async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str):
-        nodes_model: List[ET.Element] = GDTFImporter._get_model_nodes(root)
-        gltf_filenames: List[str] = GDTFImporter._get_valid_gltf_filenames(nodes_model)
+        models: List[Model] = GDTFImporter._get_model_nodes(root)
+        gltf_filenames: List[str] = GDTFImporter._get_valid_gltf_filenames(models)
         gltf_extract_path: List[str] = GDTFImporter._extract_gltf_tmp(gltf_filenames, archive)
         converted_gltf_files: List[str] = await GDTFImporter._convert_gltf(gltf_extract_path, output_dir)
         print(converted_gltf_files)
 
-    def _get_model_nodes(root: ET.Element) -> List[ET.Element]:
+    def _get_model_nodes(root: ET.Element) -> List[Model]:
         node_fixture: ET.Element = root.find("FixtureType")
         node_models: ET.Element = node_fixture.find("Models")
-        return node_models.findall("Model")
-
-    def _get_valid_gltf_filenames(nodes_model: List[ET.Element]) -> List[str]:
-        gltf_filenames: List[str] = []
+        nodes_model = node_models.findall("Model")
+        models: List[Model] = []
         for node_model in nodes_model:
-            if "File" in node_model.attrib:
-                if node_model.attrib["File"] != "":
-                    gltf_filenames.append(node_model.attrib["File"])
-                else:
-                    logger = logging.getLogger(__name__)
-                    logger.warn(f"File attribute empty for model node {node_model.attrib['Name']}, skipping.")
+            models.append(Model(node_model))
+        return models
+
+    def _get_valid_gltf_filenames(models: List[Model]) -> List[str]:
+        gltf_filenames: List[str] = []
+        for model in models:
+            if model.has_file():
+                gltf_filenames.append(model.get_file())
             else:
                 logger = logging.getLogger(__name__)
-                logger.warn(f"No File attribute for model node {node_model.attrib['Name']}, skipping.")
+                logger.warn(f"File attribute empty for model node {model.get_name()}, skipping.")
         return gltf_filenames
 
     def _extract_gltf_tmp(filenames: List[str], gdtf_archive: ZipFile) -> List[str]:
@@ -82,6 +84,14 @@ class GDTFImporter:
         return await GLTFImporter.convert(filepaths, gltf_output_dir)
     #endregion
 
-    def _create_gdtf_usd(output_dir: str, filename: str, ext: str):
+    #region make gdtf
+    def _convert_gdtf_usd(output_dir: str, filename: str, ext: str):
         url: str = output_dir + filename + ext
+        GDTFImporter._get_or_create_gdtf_usd(url)
+
+    def _get_or_create_gdtf_usd(url: str):
         _ = USDTools.get_or_create_stage(url)
+
+    def _add_gltf_payload_to_gdtf():
+        pass
+    #endregion
