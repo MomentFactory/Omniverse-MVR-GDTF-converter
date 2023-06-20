@@ -89,8 +89,9 @@ class GDTFImporter:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
-        xform_refs: List[UsdGeom.Xform] = GDTFImporter._add_gltf_reference(stage, geometries)
-        GDTFImporter._apply_gltf_scale(stage, xform_refs)
+        GDTFImporter._add_gltf_reference(stage, geometries)
+        GDTFImporter._apply_gltf_scale(stage, geometries)
+        GDTFImporter._apply_gdtf_matrix(stage, geometries)
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)
@@ -120,26 +121,27 @@ class GDTFImporter:
                 geometries.append(geometry)
                 GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
 
-    def _add_gltf_reference(stage: Usd.Stage, geometries: List[GeometryAxis]) -> List[UsdGeom.Xform]:
+    def _add_gltf_reference(stage: Usd.Stage, geometries: List[GeometryAxis]):
         stage_path = Filepath(USDTools.get_stage_directory(stage))
-        xform_refs: List[UsdGeom.Xform] = []
         for geometry in geometries:
             model: Model = geometry.get_model()
             relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
             xform: UsdGeom.Xform = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
-            xform_refs.append(xform)
-
+            geometry.set_xform(xform)
         stage.Save()
-        return xform_refs
 
-    def _apply_gltf_scale(stage: Usd.Stage, xforms: List[UsdGeom.Xform]):
+    def _apply_gltf_scale(stage: Usd.Stage, geometries: List[GeometryAxis]):
         stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
         scale_offset = UsdGeom.LinearUnits.millimeters
         scale = scale_offset / stage_metersPerUnit
         scaleOp = Gf.Vec3f(scale, scale, scale)
 
-        for xform in xforms:
+        for geometry in geometries:
+            xform = geometry.get_xform()
             USDTools.apply_xform_op(xform, UsdGeom.XformOp.TypeScale, scaleOp)
 
         stage.Save()
+
+    def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        pass
     # endregion

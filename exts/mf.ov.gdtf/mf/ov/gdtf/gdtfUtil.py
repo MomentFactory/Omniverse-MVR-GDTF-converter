@@ -1,6 +1,8 @@
 # import numpy as np
 import xml.etree.ElementTree as ET
 
+from pxr import UsdGeom
+
 from .filepathUtility import Filepath
 from .USDTools import USDTools
 
@@ -78,3 +80,9 @@ class GeometryAxis:
 
     def get_depth(self) -> int:
         return self._depth
+
+    def set_xform(self, xform: UsdGeom.Xform):
+        self._xform = xform
+
+    def get_xform(self) -> UsdGeom.Xform:
+        return self._xform
