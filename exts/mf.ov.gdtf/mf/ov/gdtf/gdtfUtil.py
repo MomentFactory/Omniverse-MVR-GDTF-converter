@@ -1,12 +1,17 @@
 # import numpy as np
 import xml.etree.ElementTree as ET
 
+from .USDTools import USDTools
+
+
 def get_attrib_if_exists(node: ET.Element, attr: str):
     return node.attrib[attr] if attr in node.attrib else None
+
 
 class Model:
     def __init__(self, node: ET.Element):
         self._name = node.attrib["Name"]
+        self._name_usd = USDTools.make_name_valid(self._name)
         self._file = get_attrib_if_exists(node, "File")
         self._primitive_type = node.attrib["PrimitiveType"]
         self._height = node.attrib["Height"]
@@ -15,6 +20,9 @@ class Model:
 
     def get_name(self) -> str:
         return self._name
+
+    def get_name_usd(self) -> str:
+        return self._name_usd
 
     def has_file(self) -> bool:
         return self._file is not None and self._file != ""
@@ -34,6 +42,7 @@ class Model:
     def get_converted_filepath(self) -> str:
         self._converted_filepath
 
+
 class GeometryAxis:
     def __init__(self, node: ET.Element):
         self._name = node.attrib["Name"]
@@ -47,3 +56,21 @@ class GeometryAxis:
         if self._model is not None:
             return self._model
         return self._name
+
+    def set_model(self, model: Model):
+        self._model = model
+
+    def get_model(self) -> Model:
+        return self._model
+
+    def set_stage_path(self, path: str):
+        self._stage_path = path
+
+    def get_stage_path(self) -> str:
+        return self._stage_path
+
+    def set_depth(self, depth: int):
+        self._depth = depth
+
+    def get_depth(self) -> int:
+        return self._depth

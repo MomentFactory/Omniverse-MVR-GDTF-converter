@@ -1,8 +1,14 @@
 import omni.usd
 from pxr import Usd, UsdGeom
+from unidecode import unidecode
+
+from pxr import Tf
 
 
 class USDTools:
+    def make_name_valid(name: str) -> str:
+        return Tf.MakeValidIdentifier(unidecode(name))
+
     def get_context():
         return omni.usd.get_context()
 
