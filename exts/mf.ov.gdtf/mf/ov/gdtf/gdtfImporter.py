@@ -112,7 +112,7 @@ class GDTFImporter:
             model_id: str = geometry.get_model_id()
             model: Model = next((model for model in models if model.get_name() == model_id), None)
             if model is not None:
-                geometry.set_model = model
+                geometry.set_model(model)
                 stage_path = f"{path}/{model.get_name_usd()}"
                 geometry.set_stage_path(stage_path)
                 geometry.set_depth(depth)
@@ -120,6 +120,7 @@ class GDTFImporter:
                 GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
 
     def _add_gltf_payload(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        stage_path = Filepath(USDTools.get_stage_directory())
         for geometry in geometries:
-            print(geometry.get_stage_path())
+            relative_path: str = 
     # endregion
