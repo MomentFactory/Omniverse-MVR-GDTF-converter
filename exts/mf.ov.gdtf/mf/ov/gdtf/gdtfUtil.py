@@ -81,8 +81,14 @@ class GeometryAxis:
     def get_depth(self) -> int:
         return self._depth
 
-    def set_xform(self, xform: UsdGeom.Xform):
-        self._xform = xform
+    def set_xform_model(self, xform: UsdGeom.Xform):
+        self._xform_model = xform
 
-    def get_xform(self) -> UsdGeom.Xform:
-        return self._xform
+    def get_xform_model(self) -> UsdGeom.Xform:
+        return self._xform_model
+
+    def set_xform_parent(self, xform: UsdGeom.Xform):
+        self._xform_parent = xform
+
+    def get_xform_parent(self) -> UsdGeom.Xform:
+        return self._xform_parent

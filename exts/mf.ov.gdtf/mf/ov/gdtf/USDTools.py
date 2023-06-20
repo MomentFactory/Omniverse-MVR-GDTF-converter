@@ -1,8 +1,9 @@
-import omni.usd
-from pxr import Usd, UsdGeom
-from typing import List
+import numpy as np
+from typing import List, Tuple
 from unidecode import unidecode
 
+import omni.usd
+from pxr import Usd, UsdGeom
 from pxr import Gf,  Tf
 
 
@@ -37,21 +38,46 @@ class USDTools:
             stage.Save()
             return stage
 
-    def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str, stage_subpath: str) -> UsdGeom.Xform:
-        _: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
+    def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str, stage_subpath: str) -> Tuple[
+            UsdGeom.Xform, UsdGeom.Xform]:
+        xform_parent: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
         xform_ref: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path + stage_subpath)
         xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
         references: Usd.References = xform_ref_prim.GetReferences()
         references.AddReference(ref_path_relative)
-        return xform_ref
+        return xform_parent, xform_ref
 
-    def apply_xform_op(xform: UsdGeom.Xform, xformOp: UsdGeom.XformOp, value: Gf.Vec3f):
+    def apply_scale_xform_op(xform: UsdGeom.Xform, value: Gf.Vec3f):
         xform_ordered_ops: List[UsdGeom.XformOp] = xform.GetOrderedXformOps()
         found_op = False
         for xform_op in xform_ordered_ops:
-            if xform_op.GetOpType() == xformOp:
+            if xform_op.GetOpType() == UsdGeom.XformOp.TypeScale:
                 xform_op.Set(value)
                 found_op = True
 
         if not found_op:
             xform.AddScaleOp().Set(value)
+
+    def np_matrix_from_gdtf(value: str) -> np.matrix:
+        # GDTF Matrix is: 4x4, row-major, Right-Handed, Z-up (Distance Unit not specified, but mm implied)
+        # expect form like "{x,y,z,w}{x,y,z,w}{x,y,z,w}{x,y,z,w}" where "x","y","z", "w" is similar to 1.000000
+        # make source compatible with np.matrix constructor: "x y z; x y z; x y z; x y z"
+        value_alt = value[1:]  # Removes "{" prefix
+        value_alt = value_alt[:-1]  # Removes "}" suffix
+        value_alt = value_alt.replace("}{", "; ")
+        value_alt = value_alt.replace(",", " ")
+
+        np_matrix: np.matrix = np.matrix(value_alt)
+        np_matrix.transpose()
+        return np_matrix
+
+    def gf_matrix_from_gdtf(np_matrix: np.matrix, scale: float) -> Gf.Matrix4d:
+        gf_matrix = Gf.Matrix4d(
+            np_matrix.item((0, 0)), np_matrix.item((0, 1)), np_matrix.item((0, 2)), np_matrix.item((0, 3)) * scale,
+            np_matrix.item((1, 0)), np_matrix.item((1, 1)), np_matrix.item((1, 2)), np_matrix.item((1, 3)) * scale,
+            np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), np_matrix.item((2, 3)) * scale,
+            np_matrix.item((3, 0)), np_matrix.item((3, 1)), np_matrix.item((3, 2)), np_matrix.item((3, 3))
+        )
+
+        # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
+        return gf_matrix.GetTranspose()

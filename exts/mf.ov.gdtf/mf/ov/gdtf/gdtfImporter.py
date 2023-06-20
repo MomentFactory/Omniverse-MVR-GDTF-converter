@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
@@ -126,22 +127,47 @@ class GDTFImporter:
         for geometry in geometries:
             model: Model = geometry.get_model()
             relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
-            xform: UsdGeom.Xform = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
-            geometry.set_xform(xform)
+            xform_parent, xform_model = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(),
+                                                               "/model")
+            geometry.set_xform_parent(xform_parent)
+            geometry.set_xform_model(xform_model)
         stage.Save()
 
     def _apply_gltf_scale(stage: Usd.Stage, geometries: List[GeometryAxis]):
         stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
         scale_offset = UsdGeom.LinearUnits.millimeters
         scale = scale_offset / stage_metersPerUnit
-        scaleOp = Gf.Vec3f(scale, scale, scale)
+        scaleValue = Gf.Vec3f(scale, scale, scale)
 
         for geometry in geometries:
-            xform = geometry.get_xform()
-            USDTools.apply_xform_op(xform, UsdGeom.XformOp.TypeScale, scaleOp)
+            xform = geometry.get_xform_model()
+            USDTools.apply_scale_xform_op(xform, scaleValue)
 
         stage.Save()
 
     def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[GeometryAxis]):
-        pass
+        rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
+        stage_scale = UsdGeom.GetStageMetersPerUnit(stage)
+        gdtf_scale = 1  # GDTF dimensions are in meters
+        applied_scale = gdtf_scale / stage_scale
+
+        for geometry in geometries:
+            xform: UsdGeom.Xform = geometry.get_xform_parent()
+            np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(geometry.get_position())
+            gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, applied_scale)
+
+            rotation: Gf.Rotation = gf_matrix.ExtractRotation()
+            euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+
+            # Z-up to Y-up
+            # TODO: Validate with stage up axis
+            translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
+            # Don't need to rotate model since the gltf import takes care of it
+            # The translation must be adjusted since it comes from the gdtf
+
+            xform.ClearXformOpOrder()  # Prevent error when overwritting
+            xform.AddTranslateOp().Set(translation)
+            xform.AddRotateXYZOp().Set(euler)
+
+        stage.Save()
     # endregion
