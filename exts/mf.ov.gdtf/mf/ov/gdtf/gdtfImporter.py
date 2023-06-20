@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 from .filepathUtility import Filepath
-from .gdtfUtil import Model
+from .gdtfUtil import Model, GeometryAxis
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -86,8 +86,28 @@ class GDTFImporter:
     def _convert_gdtf_usd(output_dir: str, filename: str, ext: str, root: ET.Element, models: List[Model]):
         url: str = output_dir + filename + ext
         GDTFImporter._get_or_create_gdtf_usd(url)
-        print(models)
+        GDTFImporter._get_geometry_hierarchy(root, models)
 
     def _get_or_create_gdtf_usd(url: str):
         _ = USDTools.get_or_create_stage(url)
+
+    def _get_geometry_hierarchy(root: ET.Element, models: List[Model]):
+        node_fixture: ET.Element = root.find("FixtureType")
+        node_geometries = node_fixture.find("Geometries")
+        GDTFImporter._get_geometry_hierarchy_recursive(node_geometries, models)
+
+
+    def _get_geometry_hierarchy_recursive(parent_node: ET.Element, models: List[Model]):
+         child_nodes_geometry = parent_node.findall("Geometry")
+         child_nodes_axis = parent_node.findall("Axis")
+         child_nodes = child_nodes_geometry + child_nodes_axis
+         for child_node in child_nodes:
+            node: GeometryAxis = GeometryAxis(child_node)
+            model_id: str = node.get_model_id()
+            model: Model = next((model for model in models if model.get_name() == model_id), None)
+            if model is not None:
+                print(f"Compatible Geometry for {node.get_name()}")
+                GDTFImporter._get_geometry_hierarchy_recursive(child_node, models)
+            else:
+                print(f"Incompatible Geometry for {node.get_name()}")
     #endregion

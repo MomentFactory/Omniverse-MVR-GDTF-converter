@@ -40,6 +40,9 @@ class GeometryAxis:
         self._model = get_attrib_if_exists(node, "Model")
         # self._xform = node.attrib["Position"]
 
+    def get_name(self) -> str:
+        return self._name
+
     def get_model_id(self) -> str:
         if self._model is not None:
             return self._model
