@@ -162,12 +162,11 @@ class GDTFImporter:
             # Z-up to Y-up
             # TODO: Validate with stage up axis
             translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
-            # Don't need to rotate model since the gltf import takes care of it
-            # The translation must be adjusted since it comes from the gdtf
+            rotate = rotate_minus90deg_xaxis * euler
 
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
-            xform.AddRotateXYZOp().Set(euler)
+            xform.AddRotateXYZOp().Set(rotate)
 
         stage.Save()
     # endregion
