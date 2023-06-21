@@ -139,6 +139,8 @@ class GDTFImporter:
         scale_offset = UsdGeom.LinearUnits.millimeters
         scale = scale_offset / stage_metersPerUnit
         scaleValue = Gf.Vec3f(scale, scale, scale)
+        # TODO: Some conversion add a xform over the mesh with a scale on it, we should prevent that,
+        # or include the reverse operation into scaleValue: scaleValue = scaleValue * (1 / xform.scale)
 
         for geometry in geometries:
             xform = geometry.get_xform_model()
