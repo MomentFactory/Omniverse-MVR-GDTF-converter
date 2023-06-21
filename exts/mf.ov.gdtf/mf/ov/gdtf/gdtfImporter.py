@@ -4,8 +4,10 @@ from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
+from pxr import Usd
+
 from .filepathUtility import Filepath
-from .gdtfUtil import Model
+from .gdtfUtil import Model, GeometryAxis
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -28,7 +30,7 @@ class GDTFImporter:
 
         return True
 
-    #region convert gltf
+    # region convert gltf
     async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
         models: List[Model] = GDTFImporter._get_model_nodes(root)
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
@@ -80,14 +82,44 @@ class GDTFImporter:
     async def _convert_gltf(models: List[Model], gdtf_output_dir):
         gltf_output_dir = gdtf_output_dir + "gltf/"
         return await GLTFImporter.convert(models, gltf_output_dir)
-    #endregion
+    # endregion
 
-    #region make gdtf
+    # region make gdtf
     def _convert_gdtf_usd(output_dir: str, filename: str, ext: str, root: ET.Element, models: List[Model]):
         url: str = output_dir + filename + ext
-        GDTFImporter._get_or_create_gdtf_usd(url)
-        print(models)
+        stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
+        geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
+        GDTFImporter._add_gltf_payload(stage, geometries)
 
-    def _get_or_create_gdtf_usd(url: str):
-        _ = USDTools.get_or_create_stage(url)
-    #endregion
+    def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
+        return USDTools.get_or_create_stage(url)
+
+    def _get_geometry_hierarchy(root: ET.Element, models: List[Model], stage: Usd.Stage) -> List[GeometryAxis]:
+        node_fixture: ET.Element = root.find("FixtureType")
+        node_geometries = node_fixture.find("Geometries")
+        default_prim_path = stage.GetDefaultPrim().GetPath()
+        geometries: List[GeometryAxis] = []
+        GDTFImporter._get_geometry_hierarchy_recursive(node_geometries, models, geometries, default_prim_path, 0)
+        return geometries
+
+    def _get_geometry_hierarchy_recursive(parent_node: ET.Element, models: List[Model], geometries: List[GeometryAxis],
+                                          path: str, depth: int):
+        child_nodes_geometry = parent_node.findall("Geometry")
+        child_nodes_axis = parent_node.findall("Axis")
+        child_nodes = child_nodes_geometry + child_nodes_axis
+        for child_node in child_nodes:
+            geometry: GeometryAxis = GeometryAxis(child_node)
+            model_id: str = geometry.get_model_id()
+            model: Model = next((model for model in models if model.get_name() == model_id), None)
+            if model is not None:
+                geometry.set_model = model
+                stage_path = f"{path}/{model.get_name_usd()}"
+                geometry.set_stage_path(stage_path)
+                geometry.set_depth(depth)
+                geometries.append(geometry)
+                GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
+
+    def _add_gltf_payload(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        for geometry in geometries:
+            print(geometry.get_stage_path())
+    # endregion
