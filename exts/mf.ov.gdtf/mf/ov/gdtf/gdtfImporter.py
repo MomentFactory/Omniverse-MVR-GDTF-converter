@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import shutil
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
@@ -38,6 +39,7 @@ class GDTFImporter:
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
         GDTFImporter._extract_gltf_to_tmp(models_filtered, archive)
         await GDTFImporter._convert_gltf(models_filtered, output_dir)
+        shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return models_filtered
 
     def _get_model_nodes(root: ET.Element) -> List[Model]:
