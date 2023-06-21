@@ -20,18 +20,17 @@ class GDTFImporter:
     async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                output_dir = gdtf_output_dir + file.filename + "/"
+                output_dir = gdtf_output_dir + file.filename +  ".gltf/"
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
                 converted_models: List[Model] = await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
-                GDTFImporter._convert_gdtf_usd(output_dir, file.filename, output_ext, root, converted_models)
+                url: str = GDTFImporter._convert_gdtf_usd(output_dir, file.filename, output_ext, root, converted_models)
+                return url
 
         except Exception as e:
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to parse gdtf file at {file.fullpath}. Make sure it is not corrupt. {e}")
-            return False
-
-        return True
+            return None
 
     # region convert gltf
     async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
@@ -92,13 +91,14 @@ class GDTFImporter:
     # endregion
 
     # region make gdtf
-    def _convert_gdtf_usd(output_dir: str, filename: str, ext: str, root: ET.Element, models: List[Model]):
+    def _convert_gdtf_usd(output_dir: str, filename: str, ext: str, root: ET.Element, models: List[Model]) -> str:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
         GDTFImporter._add_gltf_reference(stage, geometries)
         GDTFImporter._apply_gltf_scale(stage, geometries)
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
+        return url
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)

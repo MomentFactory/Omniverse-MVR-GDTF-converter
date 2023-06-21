@@ -14,7 +14,7 @@ class MfOvGdtfExtension(omni.ext.IExt):
         ai.register_importer(self._delegate_gdtf)
 
     def on_shutdown(self):
-        ai.remove_mporter(self._delegate_gdtf)
+        ai.remove_importer(self._delegate_gdtf)
         self._delegate_gdtf.destroy()
         self._delegate_gdtf = None
 

@@ -54,7 +54,7 @@ class ConverterDelegate(ai.AbstractImporterDelegate):
                 relative_paths.append(filename)
 
         converted_assets = await self._hoops_converter.create_import_task(
-            absolute_paths, relative_paths, context.export_folder, hoops_context
+            absolute_paths, context.export_folder, hoops_context
         )
 
         return converted_assets
