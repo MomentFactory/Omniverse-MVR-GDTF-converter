@@ -5,18 +5,22 @@ from typing import List
 import omni.client
 import omni.kit.asset_converter as converter
 
+from .filepathUtility import Filepath
+
 
 class GLTFImporter:
-    async def convert(filenames: List[str], input_dir: str, input_ext: str, output_dir: str,
-                      output_ext: str = "usd", timeout: int = 10) -> List[str]:
+    async def convert(filepaths: List[str], output_dir: str, output_ext: str = "usd", timeout: int = 10) -> List[str]:
         _, files_in_output_dir = omni.client.list(output_dir)  # Ignoring omni.client.Result
         relative_paths_in_output_dir = [x.relative_path for x in files_in_output_dir]
+        files: List[Filepath] = [Filepath(x) for x in filepaths]
+        filenames: List[str] = [x.filename for x in files]
+
         imported: List[str] = []
-        for filename in filenames:
+        for i, filename in enumerate(filenames):
             output_file = filename + "." + output_ext
             if output_file not in relative_paths_in_output_dir:
+                input_path = filepaths[i]
                 output_path = output_dir + output_file
-                input_path = input_dir + filename + "." + input_ext
                 try:
                     success = await asyncio.wait_for(GLTFImporter._convert(input_path, output_path), timeout=timeout)
                 except asyncio.TimeoutError:
