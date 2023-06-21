@@ -75,7 +75,7 @@ class GDTFImporter:
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_gltf in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_gltf, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
-                for filepath in namelist: # Also import .bin, textures, etc.
+                for filepath in namelist:  # Also import .bin, textures, etc.
                     if filepath.startswith(f"models/gltf/{filename}") and filepath != filepath_gltf:
                         gdtf_archive.extract(filepath, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))

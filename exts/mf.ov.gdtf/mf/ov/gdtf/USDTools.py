@@ -23,8 +23,9 @@ class USDTools:
             stage = USDTools.get_stage()
         root_layer = stage.GetRootLayer()
         repository_path = root_layer.repositoryPath
-        dir_index = repository_path.rfind("/")
-        return repository_path[:dir_index + 1]
+        repository_path_spaces = repository_path.replace("%20", " ")
+        dir_index = repository_path_spaces.rfind("/")
+        return repository_path_spaces[:dir_index + 1]
 
     def get_or_create_stage(url: str) -> Usd.Stage:
         try:  # TODO: Better way to check if stage exists?
