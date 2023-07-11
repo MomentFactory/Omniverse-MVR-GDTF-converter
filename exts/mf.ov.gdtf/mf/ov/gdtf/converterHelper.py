@@ -9,18 +9,6 @@ from .gdtfImporter import GDTFImporter
 
 
 class ConverterHelper:
-    def split_abspath(self, absolute_path: str) -> Tuple[str, str]:
-        split_index = absolute_path.rfind(":")
-        left_partial = absolute_path[:split_index]
-        right_partial = absolute_path[split_index:]
-        source_index = left_partial.rfind("/")
-        right_source = left_partial[source_index + 1:]
-
-        left = left_partial[:source_index] + "/"
-        right = right_source + right_partial
-
-        return left, right
-
     def _create_import_task(self, absolute_path, export_folder, _):
         current_nucleus_dir = omni.kit.window.content_browser.get_content_window().get_current_directory()
 
