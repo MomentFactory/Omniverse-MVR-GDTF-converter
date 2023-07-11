@@ -20,7 +20,7 @@ class GDTFImporter:
     async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                output_dir = gdtf_output_dir + file.filename +  ".gltf/"
+                output_dir = gdtf_output_dir + file.filename +  ".gdtf/"
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
                 converted_models: List[Model] = await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
