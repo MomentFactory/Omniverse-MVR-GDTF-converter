@@ -10,9 +10,16 @@ from .gdtfImporter import GDTFImporter
 
 class ConverterHelper:
     def _create_import_task(self, absolute_path, export_folder, _):
+        if absolute_path.startswith("file:/"):
+            path = absolute_path[6:]
+        else:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Invalid import (must be a file): {absolute_path}")
+            return
+
         current_nucleus_dir = omni.kit.window.content_browser.get_content_window().get_current_directory()
 
-        file: Filepath = Filepath(absolute_path)
+        file: Filepath = Filepath(path)
         output_dir = current_nucleus_dir if export_folder is None else export_folder
         if export_folder is not None and export_folder != "":
             output_dir = export_folder
