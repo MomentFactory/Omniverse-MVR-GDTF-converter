@@ -1,7 +1,8 @@
 # GDTF extension for Omniverse [mf.ov.gdtf]
 
-An Omniverse extension for converting GDTF* files to USD
+An Omniverse extension for converting GDTF* files to USD.
 
-Creates a usd file that uses payload to reference gltf models. Does not support 3ds models
+Creates an USD file that uses Payload to reference gltf models.
+Does not currently support importing 3ds models (only gltf).
 
 *General Device Type Format

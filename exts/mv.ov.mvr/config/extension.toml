@@ -2,7 +2,7 @@
 version = "0.1.0"
 
 title = "MF MVR converter"
-description = "Brings the support of MVR (My Virtual Rig) files."
+description = "Support of MVR (My Virtual Rig) files in USD."
 authors = ["Moment Factory","Frederic Lestage"]
 
 readme  = "docs/README.md"
@@ -10,7 +10,7 @@ changelog = "docs/CHANGELOG.md"
 repository = "https://github.com/MomentFactory/Omniverse-MVR-extension2"
 
 category = "Rendering"
-keywords = ["MVR", "GDTF", "GLTF", "GLB"]
+keywords = ["MVR", "GDTF","Audiovisual","Lighting","Fixture"]
 
 preview_image = "data/preview.png"
 icon = "data/icon.png"
