@@ -5,27 +5,35 @@ from typing import List
 import omni.client
 import omni.kit.asset_converter as converter
 
+from .filepathUtility import Filepath
+from .gdtfUtil import Model
+
 
 class GLTFImporter:
-    async def convert(filenames: List[str], input_dir: str, input_ext: str, output_dir: str,
-                                 output_ext: str = "usd", timeout: int = 10) -> List[str]:
+    async def convert(models: List[Model], output_dir: str, output_ext: str = "usd", timeout: int = 10) -> List[Model]:
         _, files_in_output_dir = omni.client.list(output_dir)  # Ignoring omni.client.Result
         relative_paths_in_output_dir = [x.relative_path for x in files_in_output_dir]
-        imported: List[str] = []
-        for filename in filenames:
+
+        converted_models: List[Model] = []
+
+        for model in models:
+            file: Filepath = model.get_tmpdir_filepath()
+            filename = file.filename
             output_file = filename + "." + output_ext
+            output_path = output_dir + output_file
             if output_file not in relative_paths_in_output_dir:
-                output_path = output_dir + output_file
-                input_path = input_dir + filename + "." + input_ext
+                input_path = file.fullpath
                 try:
                     success = await asyncio.wait_for(GLTFImporter._convert(input_path, output_path), timeout=timeout)
                 except asyncio.TimeoutError:
                     success = False
                 if success:
-                    imported.append(output_file)
+                    model.set_converted_filepath(Filepath(output_path))
+                    converted_models.append(model)
             else:
-                imported.append(output_file)
-        return imported
+                model.set_converted_filepath(Filepath(output_path))
+                converted_models.append(model)
+        return converted_models
 
     async def _convert(input_path: str, output_path: str) -> bool:
         converter_context = converter.AssetConverterContext()
