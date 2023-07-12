@@ -1,5 +1,6 @@
 import logging
 import numpy as np
+import shutil
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
@@ -38,6 +39,7 @@ class GDTFImporter:
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
         GDTFImporter._extract_gltf_to_tmp(models_filtered, archive)
         await GDTFImporter._convert_gltf(models_filtered, output_dir)
+        shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return models_filtered
 
     def _get_model_nodes(root: ET.Element) -> List[Model]:
@@ -73,6 +75,9 @@ class GDTFImporter:
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_gltf in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_gltf, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
+                for filepath in namelist: # Also import .bin, textures, etc.
+                    if filepath.startswith(f"models/gltf/{filename}") and filepath != filepath_gltf:
+                        gdtf_archive.extract(filepath, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_3ds:
                 logger = logging.getLogger(__name__)
@@ -139,6 +144,8 @@ class GDTFImporter:
         scale_offset = UsdGeom.LinearUnits.millimeters
         scale = scale_offset / stage_metersPerUnit
         scaleValue = Gf.Vec3f(scale, scale, scale)
+        # TODO: Some conversion add a xform over the mesh with a scale on it, we should prevent that,
+        # or include the reverse operation into scaleValue: scaleValue = scaleValue * (1 / xform.scale)
 
         for geometry in geometries:
             xform = geometry.get_xform_model()
