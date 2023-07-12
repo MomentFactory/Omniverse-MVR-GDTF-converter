@@ -20,7 +20,7 @@ class GDTFImporter:
     async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                output_dir = gdtf_output_dir + file.filename +  ".gdtf/"
+                output_dir = gdtf_output_dir + file.filename + ".gdtf/"
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
                 converted_models: List[Model] = await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
@@ -98,6 +98,7 @@ class GDTFImporter:
         GDTFImporter._add_gltf_reference(stage, geometries)
         GDTFImporter._apply_gltf_scale(stage, geometries)
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
+        GDTFImporter._add_light_to_hierarchy(stage, geometries)
         return url
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
@@ -155,9 +156,8 @@ class GDTFImporter:
 
     def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[GeometryAxis]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
-        stage_scale = UsdGeom.GetStageMetersPerUnit(stage)
         gdtf_scale = 1  # GDTF dimensions are in meters
-        applied_scale = gdtf_scale / stage_scale
+        applied_scale = USDTools.get_applied_scale(stage, gdtf_scale)
 
         for geometry in geometries:
             xform: UsdGeom.Xform = geometry.get_xform_parent()
@@ -176,5 +176,18 @@ class GDTFImporter:
             xform.AddTranslateOp().Set(translation)
             xform.AddRotateXYZOp().Set(rotate)
 
+        stage.Save()
+
+    def _add_light_to_hierarchy(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        deepest_geom = geometries[-1]
+        max_depth = deepest_geom.get_depth()
+        for geom in reversed(geometries):
+            depth = geom.get_depth()
+            if (depth > max_depth):
+                deepest_geom = geom
+                max_depth = depth
+        light_stage_path = deepest_geom.get_stage_path() + "/Beam"
+        model = deepest_geom.get_model()
+        USDTools.add_light(stage, light_stage_path, model.get_height(), model.get_width())
         stage.Save()
     # endregion
