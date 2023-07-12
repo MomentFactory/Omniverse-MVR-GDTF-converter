@@ -17,9 +17,9 @@ class Model:
         self._name_usd = USDTools.make_name_valid(self._name)
         self._file = get_attrib_if_exists(node, "File")
         self._primitive_type = node.attrib["PrimitiveType"]
-        self._height = node.attrib["Height"]
-        self._length = node.attrib["Length"]
-        self._width = node.attrib["Width"]
+        self._height = float(node.attrib["Height"])
+        self._length = float(node.attrib["Length"])
+        self._width = float(node.attrib["Width"])
 
     def get_name(self) -> str:
         return self._name
@@ -44,6 +44,12 @@ class Model:
 
     def get_converted_filepath(self) -> Filepath:
         return self._converted_filepath
+
+    def get_height(self) -> float:
+        return self._height
+
+    def get_width(self) -> float:
+        return self._width
 
 
 class GeometryAxis:

@@ -3,8 +3,7 @@ from typing import List, Tuple
 from unidecode import unidecode
 
 import omni.usd
-from pxr import Usd, UsdGeom
-from pxr import Gf,  Tf
+from pxr import Gf, Tf, Sdf, UsdLux, Usd, UsdGeom
 
 
 class USDTools:
@@ -48,6 +47,10 @@ class USDTools:
         references.AddReference(ref_path_relative)
         return xform_parent, xform_ref
 
+    def get_applied_scale(stage: Usd.Stage, scale_factor: float):
+        stage_scale = UsdGeom.GetStageMetersPerUnit(stage)
+        return scale_factor / stage_scale
+
     def apply_scale_xform_op(xform: UsdGeom.Xform, value: Gf.Vec3f):
         xform_ordered_ops: List[UsdGeom.XformOp] = xform.GetOrderedXformOps()
         found_op = False
@@ -82,3 +85,13 @@ class USDTools:
 
         # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
         return gf_matrix.GetTranspose()
+
+    def add_light(stage: Usd.Stage, path: str, height: float, diameter: float):
+        scale = USDTools.get_applied_scale(stage, 1)
+        light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
+        light.ClearXformOpOrder()  # Prevent error when overwritting
+        light.AddTranslateOp().Set(Gf.Vec3d(0, -height * 0.5 * scale, 0))
+        light.AddRotateXYZOp().Set(Gf.Vec3d(-90, 0, 0))
+        light.AddScaleOp().Set(Gf.Vec3d(diameter * scale, diameter * scale, 1))
+        light.CreateIntensityAttr().Set(60_000)
+        light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
