@@ -13,6 +13,14 @@ from .gdtfUtil import Model, GeometryAxis
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
+def convert_3ds_to_gltf(input, output):
+    import subprocess, os
+    path = __file__
+    my_env = os.environ.copy()
+    my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
+    # scriptPath = "C:\\Users\\antoinep\\Desktop\\GLTFExporter\\gltf-exporter.py"
+    scriptPath2 = path + "\\..\\gltf-exporter.py"
+    return subprocess.run(["py", scriptPath2, input, output], capture_output=True, env=my_env)
 
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
@@ -78,9 +86,16 @@ class GDTFImporter:
                     if filepath.startswith(f"models/gltf/{filename}") and filepath != filepath_gltf:
                         gdtf_archive.extract(filepath, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
-            elif filepath_3ds:
+            elif filepath_3ds in namelist:
+                import os
+                tmp_export_path = gdtf_archive.extract(filepath_3ds, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
+                temp_export_path_gltf = tmp_export_path[:-4] + ".gltf"
+                result = convert_3ds_to_gltf(tmp_export_path, temp_export_path_gltf)
                 logger = logging.getLogger(__name__)
-                logger.warn(f"Found unsupported 3ds file for {filename}, skipping.")
+                logger.warn(f"REULST: {result}")
+                print(result)
+                model.set_tmpdir_filepath(Filepath(temp_export_path_gltf))
+                os.remove(tmp_export_path)
             else:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
