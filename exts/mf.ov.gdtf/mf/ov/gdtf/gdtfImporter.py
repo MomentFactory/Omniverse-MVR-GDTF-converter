@@ -18,9 +18,8 @@ def convert_3ds_to_gltf(input, output):
     path = __file__
     my_env = os.environ.copy()
     my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
-    # scriptPath = "C:\\Users\\antoinep\\Desktop\\GLTFExporter\\gltf-exporter.py"
-    scriptPath2 = path + "\\..\\gltf-exporter.py"
-    return subprocess.run(["py", scriptPath2, input, output], capture_output=True, env=my_env)
+    scriptPath = path + "\\..\\gltf-exporter.py"
+    return subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
 
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
@@ -91,9 +90,6 @@ class GDTFImporter:
                 tmp_export_path = gdtf_archive.extract(filepath_3ds, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 temp_export_path_gltf = tmp_export_path[:-4] + ".gltf"
                 result = convert_3ds_to_gltf(tmp_export_path, temp_export_path_gltf)
-                logger = logging.getLogger(__name__)
-                logger.warn(f"REULST: {result}")
-                print(result)
                 model.set_tmpdir_filepath(Filepath(temp_export_path_gltf))
                 os.remove(tmp_export_path)
             else:
