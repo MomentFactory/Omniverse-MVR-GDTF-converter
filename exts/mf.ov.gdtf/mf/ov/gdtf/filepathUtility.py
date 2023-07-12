@@ -3,6 +3,8 @@ import os
 
 class Filepath:
     def __init__(self, filepath: str):
+        self._is_none = filepath == ""
+
         self.fullpath = filepath
         self.directory = os.path.dirname(filepath) + "/"
         self.basename = os.path.basename(filepath)
@@ -13,4 +15,7 @@ class Filepath:
         return self.directory[:12] == "omniverse://"
 
     def get_relative_from(self, other) -> str:
-        return "./" + other.fullpath[len(self.directory):]
+        if self._is_none:
+            return other.fullpath
+        else:
+            return "./" + other.fullpath[len(self.directory):]
