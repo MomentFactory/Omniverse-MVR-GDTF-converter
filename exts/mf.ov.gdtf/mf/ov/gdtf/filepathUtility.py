@@ -1,5 +1,6 @@
 import os
 
+
 class Filepath:
     def __init__(self, filepath: str):
         self.fullpath = filepath
@@ -10,3 +11,6 @@ class Filepath:
     def is_nucleus_path(self) -> bool:
         # TODO: Replace with omni utility method
         return self.directory[:12] == "omniverse://"
+
+    def get_relative_from(self, other) -> str:
+        return "./" + other.fullpath[len(self.directory):]

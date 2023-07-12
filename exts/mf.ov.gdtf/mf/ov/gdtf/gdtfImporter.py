@@ -68,10 +68,10 @@ class GDTFImporter:
 
             if filepath_glb in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_glb, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
-                model.set_tmpdir_filepath(tmp_export_path)
+                model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_gltf in namelist:
                 tmp_export_path = gdtf_archive.extract(filepath_gltf, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
-                model.set_tmpdir_filepath(tmp_export_path)
+                model.set_tmpdir_filepath(Filepath(tmp_export_path))
             elif filepath_3ds:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"Found unsupported 3ds file for {filename}, skipping.")
@@ -89,7 +89,7 @@ class GDTFImporter:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
-        GDTFImporter._add_gltf_payload(stage, geometries)
+        GDTFImporter._add_gltf_reference(stage, geometries)
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)
@@ -112,14 +112,17 @@ class GDTFImporter:
             model_id: str = geometry.get_model_id()
             model: Model = next((model for model in models if model.get_name() == model_id), None)
             if model is not None:
-                geometry.set_model = model
+                geometry.set_model(model)
                 stage_path = f"{path}/{model.get_name_usd()}"
                 geometry.set_stage_path(stage_path)
                 geometry.set_depth(depth)
                 geometries.append(geometry)
                 GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
 
-    def _add_gltf_payload(stage: Usd.Stage, geometries: List[GeometryAxis]):
+    def _add_gltf_reference(stage: Usd.Stage, geometries: List[GeometryAxis]):
+        stage_path = Filepath(USDTools.get_stage_directory(stage))
         for geometry in geometries:
-            print(geometry.get_stage_path())
+            model: Model = geometry.get_model()
+            relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
+            USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
     # endregion

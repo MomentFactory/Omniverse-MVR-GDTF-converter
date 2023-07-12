@@ -16,8 +16,9 @@ class USDTools:
         context = USDTools.get_context()
         return context.get_stage()
 
-    def get_stage_directory() -> str:
-        stage: Usd.Stage = USDTools.get_stage()
+    def get_stage_directory(stage: Usd.Stage = None) -> str:
+        if stage is None:
+            stage = USDTools.get_stage()
         root_layer = stage.GetRootLayer()
         repository_path = root_layer.repositoryPath
         dir_index = repository_path.rfind("/")
@@ -34,3 +35,14 @@ class USDTools:
             stage.SetDefaultPrim(default_prim)
             stage.Save()
             return stage
+
+    def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str, stage_subpath: str) -> UsdGeom.Xform:
+        _: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
+        print(stage_path + stage_subpath)
+        xform_ref: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path + stage_subpath)
+        xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
+        stage.Save()
+        references: Usd.References = xform_ref_prim.GetReferences()
+        references.AddReference(ref_path_relative)
+        stage.Save()
+        return xform_ref
