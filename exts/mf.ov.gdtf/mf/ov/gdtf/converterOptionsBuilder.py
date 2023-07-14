@@ -1,9 +1,9 @@
-from .converterOptions import ConverterOptions
-
 from omni.kit.menu import utils
 from omni.kit.tool.asset_importer.file_picker import FilePicker
 from omni.kit.tool.asset_importer.filebrowser import FileBrowserMode, FileBrowserSelectionType
 import omni.kit.window.content_browser as content
+
+from .converterOptions import ConverterOptions
 
 
 class ConverterOptionsBuilder:

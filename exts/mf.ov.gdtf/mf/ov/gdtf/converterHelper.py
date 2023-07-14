@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from typing import Tuple
 
 import omni.kit.window.content_browser
 
