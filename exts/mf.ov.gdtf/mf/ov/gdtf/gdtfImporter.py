@@ -17,7 +17,7 @@ from .USDTools import USDTools
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
 
-    async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
+    async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> str:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
                 output_dir = gdtf_output_dir + file.filename + ".gdtf/"
