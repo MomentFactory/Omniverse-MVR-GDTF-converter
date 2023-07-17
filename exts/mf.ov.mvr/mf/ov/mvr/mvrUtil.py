@@ -43,6 +43,15 @@ class Fixture:
     def get_matrix(self) -> str:
         return self._matrix
 
+    def set_stage_path(self, path: str):
+        self._stage_path = path
+
+    def get_stage_path(self) -> str:
+        return self._stage_path
+
+    def get_spec_name(self) -> str:
+        return self._GDTFspec
+
     def _get_value_text_if_exists(self, name: str) -> str:
         node = self._get_child_node(name)
         if node is not None:

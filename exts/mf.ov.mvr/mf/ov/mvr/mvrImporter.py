@@ -1,10 +1,11 @@
 import logging
 import numpy as np
-from typing import List
+from typing import List, Tuple
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 from pxr import Gf, Usd, UsdGeom
+from mf.ov.gdtf import gdtfImporter as gdtf
 
 from .filepathUtility import Filepath
 from .mvrUtil import Layer, Fixture
@@ -13,13 +14,14 @@ from .USDTools import USDTools
 
 class MVRImporter:
     async def convert(file: Filepath, mvr_output_dir: str, output_ext: str = ".usd") -> str:
+        # TODO:  change output_ext to bool use_usda
         try:
             with ZipFile(file.fullpath, 'r') as archive:
                 output_dir = mvr_output_dir + file.filename + ".mvr/"
                 data = archive.read("GeneralSceneDescription.xml")
                 root = ET.fromstring(data)
                 MVRImporter._warn_for_version(root)
-                url: str = MVRImporter.convert_mvr_usd(output_dir, file.filename, output_ext, root)
+                url: str = await MVRImporter.convert_mvr_usd(output_dir, file.filename, output_ext, root, archive)
                 return url
         except Exception as e:
             logger = logging.getLogger(__name__)
@@ -33,17 +35,14 @@ class MVRImporter:
             logger = logging.getLogger(__name__)
             logger.warn(f"This extension is tested with mvr v1.5, this file version is {v_major}.{v_minor}")
 
-    def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element) -> str:
-        url: str = output_dir + filename + ext
+    async def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element, archive: ZipFile) -> str:
         scene: ET.Element = root.find("Scene")
-        stage: Usd.Stage = USDTools.get_or_create_stage(url)
         layer: Layer = MVRImporter._get_layer(scene)
         fixtures: List[Fixture] = MVRImporter._get_fixtures(layer)
-        MVRImporter._add_fixture_xform(stage, fixtures)
 
-        fixture_names: List[str] = [x.get_unique_name_usd() for x in fixtures]
-        print(url)
-        print(fixture_names)
+        stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, fixtures)
+        await MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive)
+        stage.Save()
         return url
 
     def _get_layer(scene: ET.Element) -> ET.Element:
@@ -57,6 +56,13 @@ class MVRImporter:
         fixtures = childlist.findall("Fixture")
         return [Fixture(x) for x in fixtures]
 
+    def _make_mvr_stage(output_dir: str, filename: str, ext: str, fixtures: List[str]) -> Tuple[Usd.Stage, str]:
+        url: str = output_dir + filename + ext
+        stage: Usd.Stage = USDTools.get_or_create_stage(url)
+        MVRImporter._add_fixture_xform(stage, fixtures)
+
+        return stage, url
+
     def _add_fixture_xform(stage: Usd.Stage, fixtures: List[Fixture]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
         mvr_scale = 0.001  # MVR dimensions are in milimeters
@@ -64,6 +70,7 @@ class MVRImporter:
 
         for fixture in fixtures:
             xform: UsdGeom.Xform = USDTools.add_fixture_xform(stage, fixture.get_unique_name_usd())
+            fixture.set_stage_path(xform.GetPrim().GetPath())
             np_matrix: np.matrix = USDTools.np_matrix_from_mvr(fixture.get_matrix())
             gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_mvr(np_matrix, applied_scale)
 
@@ -81,3 +88,15 @@ class MVRImporter:
 
             fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
+
+    async def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile):
+        gdtf_spec_uniq: List[str] = MVRImporter._get_gdtf_to_import(fixtures)
+        gdtf_output_dir = mvr_output_dir
+        for gdtf_spec in gdtf_spec_uniq:
+            await gdtf.GDTFImporter.convert_from_mvr(gdtf_spec, gdtf_output_dir, archive)
+
+    def _get_gdtf_to_import(fixtures: List[Fixture]) -> List[str]:
+        fixture_names = [x.get_spec_name() for x in fixtures]
+        fixture_names_set = set(fixture_names)
+        fixture_name_uniq = list(fixture_names_set)
+        return fixture_name_uniq
