@@ -1,9 +1,10 @@
 from io import BytesIO
 import logging
 import numpy as np
+import os
 import shutil
+import subprocess
 import tempfile
-import os, subprocess
 from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
@@ -27,11 +28,11 @@ def convert_3ds_to_gltf(input, output):
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
 
-    async def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> str:
+    def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> str:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
                 gdtf_output_dir = output_dir + file.filename + ".gdtf/"
-                url: str = await GDTFImporter._convert(archive, gdtf_output_dir, file.filename, output_ext)
+                url: str = GDTFImporter._convert(archive, gdtf_output_dir, file.filename, output_ext)
                 return url
 
         except Exception as e:
@@ -39,30 +40,30 @@ class GDTFImporter:
             logger.error(f"Failed to parse gdtf file at {file.fullpath}. Make sure it is not corrupt. {e}")
             return None
 
-    async def convert_from_mvr(spec_name: str, output_dir: str, mvr_archive: ZipFile, output_ext: str = ".usd") -> bool:
+    def convert_from_mvr(spec_name: str, output_dir: str, mvr_archive: ZipFile, output_ext: str = ".usd") -> bool:
         spec_name_with_ext = spec_name + ".gdtf"
         if spec_name_with_ext in mvr_archive.namelist():
             gdtf_data = BytesIO(mvr_archive.read(spec_name_with_ext))
             gdtf_output_dir = output_dir + spec_name_with_ext + "/"
             with ZipFile(gdtf_data) as gdtf_archive:
-                await GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name, output_ext)
+                GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name, output_ext)
                 return True
         else:
             return False
 
-    async def _convert(archive: ZipFile, output_dir: str, name: str, output_ext: str) -> str:
+    def _convert(archive: ZipFile, output_dir: str, name: str, output_ext: str) -> str:
         data = archive.read("description.xml")
         root = ET.fromstring(data)
-        converted_models: List[Model] = await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
+        converted_models: List[Model] = GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
         url: str = GDTFImporter._convert_gdtf_usd(output_dir, name, output_ext, root, converted_models)
         return url
 
     # region convert gltf
-    async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
+    def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
         models: List[Model] = GDTFImporter._get_model_nodes(root)
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
         GDTFImporter._extract_gltf_to_tmp(models_filtered, archive)
-        await GDTFImporter._convert_gltf(models_filtered, output_dir)
+        GDTFImporter._convert_gltf(models_filtered, output_dir)
         shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return models_filtered
 
@@ -113,9 +114,9 @@ class GDTFImporter:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
 
-    async def _convert_gltf(models: List[Model], gdtf_output_dir):
+    def _convert_gltf(models: List[Model], gdtf_output_dir):
         gltf_output_dir = gdtf_output_dir + "gltf/"
-        return await GLTFImporter.convert(models, gltf_output_dir)
+        return GLTFImporter.convert(models, gltf_output_dir)
     # endregion
 
     # region make gdtf

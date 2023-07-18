@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import omni.kit.window.content_browser
@@ -29,7 +28,7 @@ class ConverterHelper:
             logger.error("Cannot import directly from Omniverse")
             return
 
-        url: str = asyncio.ensure_future(GDTFImporter.convert(file, output_dir))
+        url: str = GDTFImporter.convert(file, output_dir)
         return url
 
     async def create_import_task(self, absolute_paths, export_folder, hoops_context):
