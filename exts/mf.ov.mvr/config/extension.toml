@@ -1,0 +1,28 @@
+[package]
+version = "0.1.0"
+
+title = "MF MVR converter"
+description = "Support of MVR (My Virtual Rig) files in USD."
+authors = ["Moment Factory","Frederic Lestage"]
+
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+repository = "https://github.com/MomentFactory/Omniverse-MVR-extension2"
+
+category = "Rendering"
+keywords = ["MVR", "GDTF","Audiovisual","Lighting","Fixture"]
+
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+[dependencies]
+"mf.ov.gdtf" = {}
+
+[[python.module]]
+name = "mf.ov.mvr"
+
+[python.pipapi]
+requirements = [
+    "unidecode"
+]
+use_online_index = true

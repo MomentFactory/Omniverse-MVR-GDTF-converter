@@ -1,6 +1,9 @@
+from io import BytesIO
 import logging
 import numpy as np
+import os
 import shutil
+import subprocess
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
@@ -14,23 +17,46 @@ from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
 
+def convert_3ds_to_gltf(input, output):
+    path = __file__
+    my_env = os.environ.copy()
+    my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
+    scriptPath = path + "\\..\\gltf-exporter.py"
+    return subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
+
+
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
 
-    def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
+    def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> str:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                output_dir = gdtf_output_dir + file.filename + ".gdtf/"
-                data = archive.read("description.xml")
-                root = ET.fromstring(data)
-                converted_models: List[Model] = GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
-                url: str = GDTFImporter._convert_gdtf_usd(output_dir, file.filename, output_ext, root, converted_models)
+                gdtf_output_dir = output_dir + file.filename + ".gdtf/"
+                url: str = GDTFImporter._convert(archive, gdtf_output_dir, file.filename, output_ext)
                 return url
 
         except Exception as e:
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to parse gdtf file at {file.fullpath}. Make sure it is not corrupt. {e}")
             return None
+
+    def convert_from_mvr(spec_name: str, output_dir: str, mvr_archive: ZipFile, output_ext: str = ".usd") -> bool:
+        spec_name_with_ext = spec_name + ".gdtf"
+        if spec_name_with_ext in mvr_archive.namelist():
+            gdtf_data = BytesIO(mvr_archive.read(spec_name_with_ext))
+            gdtf_output_dir = output_dir + spec_name_with_ext + "/"
+            with ZipFile(gdtf_data) as gdtf_archive:
+                GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name, output_ext)
+                return True
+        else:
+            return False
+
+    def _convert(archive: ZipFile, output_dir: str, name: str, output_ext: str) -> str:
+        data = archive.read("description.xml")
+        root = ET.fromstring(data)
+        converted_models: List[Model] = GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
+        url: str = GDTFImporter._convert_gdtf_usd(output_dir, name, output_ext, root, converted_models)
+        return url
 
     # region convert gltf
     def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
@@ -78,9 +104,12 @@ class GDTFImporter:
                     if filepath.startswith(f"models/gltf/{filename}") and filepath != filepath_gltf:
                         gdtf_archive.extract(filepath, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
-            elif filepath_3ds:
-                logger = logging.getLogger(__name__)
-                logger.warn(f"Found unsupported 3ds file for {filename}, skipping.")
+            elif filepath_3ds in namelist:
+                tmp_export_path = gdtf_archive.extract(filepath_3ds, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
+                temp_export_path_gltf = tmp_export_path[:-4] + ".gltf"
+                convert_3ds_to_gltf(tmp_export_path, temp_export_path_gltf)
+                model.set_tmpdir_filepath(Filepath(temp_export_path_gltf))
+                os.remove(tmp_export_path)
             else:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
