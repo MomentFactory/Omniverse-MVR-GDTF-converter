@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 import omni.client
@@ -23,6 +24,9 @@ class GLTFImporter:
                 if result == omni.client.Result.OK:
                     model.set_converted_filepath(Filepath(output_path))
                     converted_models.append(model)
+                else:
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failure to convert file {input_path}: {result}")
             else:
                 model.set_converted_filepath(Filepath(output_path))
                 converted_models.append(model)
