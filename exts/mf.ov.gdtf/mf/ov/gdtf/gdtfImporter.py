@@ -31,18 +31,12 @@ class GDTFImporter:
             return None
 
     async def convert_from_mvr(spec_name: str, output_dir: str, mvr_archive: ZipFile, output_ext: str = ".usd") -> bool:
-        spec_name_stripped = spec_name
-        if spec_name[-5:] == ".gdtf":
-            spec_name_stripped = spec_name[:-5]
-        spec_name_with_ext = f"{spec_name_stripped}.gdtf"
-
+        spec_name_with_ext = spec_name + ".gdtf"
         if spec_name_with_ext in mvr_archive.namelist():
             gdtf_data = BytesIO(mvr_archive.read(spec_name_with_ext))
             gdtf_output_dir = output_dir + spec_name_with_ext + "/"
-            print(spec_name_with_ext)
-            print(gdtf_output_dir)
             with ZipFile(gdtf_data) as gdtf_archive:
-                await GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name_stripped, output_ext)
+                await GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name, output_ext)
                 return True
         else:
             return False
