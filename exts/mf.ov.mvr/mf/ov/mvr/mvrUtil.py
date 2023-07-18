@@ -50,7 +50,10 @@ class Fixture:
         return self._stage_path
 
     def get_spec_name(self) -> str:
-        return self._GDTFspec
+        spec_name = self._GDTFspec
+        if self._GDTFspec[-5:] == ".gdtf":
+            spec_name = self._GDTFspec[:-5]
+        return spec_name
 
     def _get_value_text_if_exists(self, name: str) -> str:
         node = self._get_child_node(name)
