@@ -16,7 +16,6 @@ class GLTFImporter:
         for model in models:
             file: Filepath = model.get_tmpdir_filepath()
             output_file = file.basename
-            print(output_file)
             output_path = output_dir + output_file
             if output_file not in relative_paths_in_output_dir:
                 input_path = file.fullpath
