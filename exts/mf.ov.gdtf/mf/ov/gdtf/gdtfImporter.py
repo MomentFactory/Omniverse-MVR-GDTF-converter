@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import shutil
 import tempfile
+import os, subprocess
 from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
@@ -12,6 +13,14 @@ from .filepathUtility import Filepath
 from .gdtfUtil import Model, GeometryAxis
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
+
+
+def convert_3ds_to_gltf(input, output):
+    path = __file__
+    my_env = os.environ.copy()
+    my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
+    scriptPath = path + "\\..\\gltf-exporter.py"
+    return subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
 
 
 class GDTFImporter:
@@ -78,9 +87,12 @@ class GDTFImporter:
                     if filepath.startswith(f"models/gltf/{filename}") and filepath != filepath_gltf:
                         gdtf_archive.extract(filepath, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
                 model.set_tmpdir_filepath(Filepath(tmp_export_path))
-            elif filepath_3ds:
-                logger = logging.getLogger(__name__)
-                logger.warn(f"Found unsupported 3ds file for {filename}, skipping.")
+            elif filepath_3ds in namelist:
+                tmp_export_path = gdtf_archive.extract(filepath_3ds, GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
+                temp_export_path_gltf = tmp_export_path[:-4] + ".gltf"
+                convert_3ds_to_gltf(tmp_export_path, temp_export_path_gltf)
+                model.set_tmpdir_filepath(Filepath(temp_export_path_gltf))
+                os.remove(tmp_export_path)
             else:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
