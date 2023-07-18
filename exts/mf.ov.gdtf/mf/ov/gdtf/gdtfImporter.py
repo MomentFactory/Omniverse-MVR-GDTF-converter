@@ -17,13 +17,13 @@ from .USDTools import USDTools
 class GDTFImporter:
     TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
 
-    async def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
+    def convert(file: Filepath, gdtf_output_dir: str, output_ext: str = ".usd") -> bool:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
                 output_dir = gdtf_output_dir + file.filename + ".gdtf/"
                 data = archive.read("description.xml")
                 root = ET.fromstring(data)
-                converted_models: List[Model] = await GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
+                converted_models: List[Model] = GDTFImporter._find_and_convert_gltf(root, archive, output_dir)
                 url: str = GDTFImporter._convert_gdtf_usd(output_dir, file.filename, output_ext, root, converted_models)
                 return url
 
@@ -33,11 +33,11 @@ class GDTFImporter:
             return None
 
     # region convert gltf
-    async def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
+    def _find_and_convert_gltf(root: ET.Element, archive: ZipFile, output_dir: str) -> List[Model]:
         models: List[Model] = GDTFImporter._get_model_nodes(root)
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
         GDTFImporter._extract_gltf_to_tmp(models_filtered, archive)
-        await GDTFImporter._convert_gltf(models_filtered, output_dir)
+        GDTFImporter._convert_gltf(models_filtered, output_dir)
         shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return models_filtered
 
@@ -85,9 +85,9 @@ class GDTFImporter:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
 
-    async def _convert_gltf(models: List[Model], gdtf_output_dir):
+    def _convert_gltf(models: List[Model], gdtf_output_dir):
         gltf_output_dir = gdtf_output_dir + "gltf/"
-        return await GLTFImporter.convert(models, gltf_output_dir)
+        return GLTFImporter.convert(models, gltf_output_dir)
     # endregion
 
     # region make gdtf
