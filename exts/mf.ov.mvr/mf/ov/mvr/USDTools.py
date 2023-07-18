@@ -53,3 +53,9 @@ class USDTools:
 
     def set_fixture_attribute(prim: Usd.Prim, attribute_name: str, attribute_type: Sdf.ValueTypeNames, attribute_value):
         prim.CreateAttribute(f"mf:mvr:{attribute_name}", attribute_type).Set(attribute_value)
+
+    def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str):
+        xform_ref: UsdGeom.Xform = stage.GetPrimAtPath(stage_path)
+        references: Usd.References = xform_ref.GetReferences()
+        references.AddReference(ref_path_relative)
+        stage.Save()

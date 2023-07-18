@@ -41,7 +41,7 @@ class MVRImporter:
         fixtures: List[Fixture] = MVRImporter._get_fixtures(layer)
 
         stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, fixtures)
-        await MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive)
+        await MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive, ext)
         stage.Save()
         return url
 
@@ -89,14 +89,22 @@ class MVRImporter:
             fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
 
-    async def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile):
+    async def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile, ext: str):
         gdtf_spec_uniq: List[str] = MVRImporter._get_gdtf_to_import(fixtures)
         gdtf_output_dir = mvr_output_dir
         for gdtf_spec in gdtf_spec_uniq:
             await gdtf.GDTFImporter.convert_from_mvr(gdtf_spec, gdtf_output_dir, archive)
+        MVRImporter._add_gdtf_reference(fixtures, stage, ext)
 
     def _get_gdtf_to_import(fixtures: List[Fixture]) -> List[str]:
         fixture_names = [x.get_spec_name() for x in fixtures]
         fixture_names_set = set(fixture_names)
         fixture_name_uniq = list(fixture_names_set)
         return fixture_name_uniq
+
+    def _add_gdtf_reference(fixtures: List[Fixture], stage: Usd.Stage, ext: str):
+        for fixture in fixtures:
+            spec = fixture.get_spec_name()
+            relative_path = f"./{spec}.gdtf/{spec}{ext}"
+            stage_path = fixture.get_stage_path()
+            USDTools.add_reference(stage, relative_path, stage_path)
