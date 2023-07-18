@@ -5,7 +5,6 @@ import omni.kit.window.content_browser as content
 
 from .converterOptions import ConverterOptions
 
-
 class ConverterOptionsBuilder:
     def __init__(self):
         self._file_picker = None
