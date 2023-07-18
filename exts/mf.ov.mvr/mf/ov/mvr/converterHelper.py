@@ -30,7 +30,7 @@ class ConverterHelper:
             logger.error("Cannot import directly from Omniverse")
             return
 
-        url: str = asyncio.ensure_future(MVRImporter.convert(file, output_dir))
+        url: str = MVRImporter.convert(file, output_dir)
         return url
 
     async def create_import_task(self, absolute_paths, export_folder, hoops_context):

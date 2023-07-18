@@ -13,7 +13,7 @@ from .USDTools import USDTools
 
 
 class MVRImporter:
-    async def convert(file: Filepath, mvr_output_dir: str, output_ext: str = ".usd") -> str:
+    def convert(file: Filepath, mvr_output_dir: str, output_ext: str = ".usd") -> str:
         # TODO:  change output_ext to bool use_usda
         try:
             with ZipFile(file.fullpath, 'r') as archive:
@@ -21,7 +21,7 @@ class MVRImporter:
                 data = archive.read("GeneralSceneDescription.xml")
                 root = ET.fromstring(data)
                 MVRImporter._warn_for_version(root)
-                url: str = await MVRImporter.convert_mvr_usd(output_dir, file.filename, output_ext, root, archive)
+                url: str = MVRImporter.convert_mvr_usd(output_dir, file.filename, output_ext, root, archive)
                 return url
         except Exception as e:
             logger = logging.getLogger(__name__)
@@ -35,13 +35,13 @@ class MVRImporter:
             logger = logging.getLogger(__name__)
             logger.warn(f"This extension is tested with mvr v1.5, this file version is {v_major}.{v_minor}")
 
-    async def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element, archive: ZipFile) -> str:
+    def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element, archive: ZipFile) -> str:
         scene: ET.Element = root.find("Scene")
         layer: Layer = MVRImporter._get_layer(scene)
         fixtures: List[Fixture] = MVRImporter._get_fixtures(layer)
 
         stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, fixtures)
-        await MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive, ext)
+        MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive, ext)
         stage.Save()
         return url
 
@@ -89,11 +89,11 @@ class MVRImporter:
             fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
 
-    async def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile, ext: str):
+    def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile, ext: str):
         gdtf_spec_uniq: List[str] = MVRImporter._get_gdtf_to_import(fixtures)
         gdtf_output_dir = mvr_output_dir
         for gdtf_spec in gdtf_spec_uniq:
-            await gdtf.GDTFImporter.convert_from_mvr(gdtf_spec, gdtf_output_dir, archive)
+            gdtf.GDTFImporter.convert_from_mvr(gdtf_spec, gdtf_output_dir, archive)
         MVRImporter._add_gdtf_reference(fixtures, stage, ext)
 
     def _get_gdtf_to_import(fixtures: List[Fixture]) -> List[str]:
