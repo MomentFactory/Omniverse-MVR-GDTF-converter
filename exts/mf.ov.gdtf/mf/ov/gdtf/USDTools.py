@@ -43,8 +43,9 @@ class USDTools:
         xform_parent: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
         xform_ref: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path + stage_subpath)
         xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
+        unescaped_path: str = ref_path_relative.replace("%20", " ")
         references: Usd.References = xform_ref_prim.GetReferences()
-        references.AddReference(ref_path_relative)
+        references.AddReference(unescaped_path)
         return xform_parent, xform_ref
 
     def get_applied_scale(stage: Usd.Stage, scale_factor: float):
