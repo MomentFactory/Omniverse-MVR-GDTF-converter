@@ -8,6 +8,7 @@ from .gdtfImporter import GDTFImporter
 
 class ConverterHelper:
     def _create_import_task(self, absolute_path, export_folder, _):
+        absolute_path = absolute_path.replace("%20", " ")
         if absolute_path.startswith("file:/"):
             path = absolute_path[6:]
         else:
