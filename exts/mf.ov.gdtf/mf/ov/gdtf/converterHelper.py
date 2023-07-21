@@ -12,9 +12,7 @@ class ConverterHelper:
         if absolute_path.startswith("file:/"):
             path = absolute_path[6:]
         else:
-            logger = logging.getLogger(__name__)
-            logger.error(f"Invalid import (must be a file): {absolute_path}")
-            return
+            path = absolute_path
 
         current_nucleus_dir = omni.kit.window.content_browser.get_content_window().get_current_directory()
 
