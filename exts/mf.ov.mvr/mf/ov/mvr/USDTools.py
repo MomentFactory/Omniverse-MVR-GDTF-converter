@@ -56,6 +56,7 @@ class USDTools:
 
     def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str):
         xform_ref: UsdGeom.Xform = stage.GetPrimAtPath(stage_path)
+        unescaped_path: str = ref_path_relative.replace("%20", " ")
         references: Usd.References = xform_ref.GetReferences()
-        references.AddReference(ref_path_relative)
+        references.AddReference(unescaped_path)
         stage.Save()
