@@ -37,19 +37,27 @@ class MVRImporter:
 
     def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element, archive: ZipFile) -> str:
         scene: ET.Element = root.find("Scene")
-        layer: Layer = MVRImporter._get_layer(scene)
-        fixtures: List[Fixture] = MVRImporter._get_fixtures(layer)
+        layers: Layer = MVRImporter._get_layer(scene)
+        fixtures: List[Fixture] = []
+        for layer in layers:
+            fixturesCurrent = MVRImporter._get_fixtures(layer)
+            if len(fixturesCurrent) > 0:
+                for fixtureCurrent in fixturesCurrent:
+                    fixtures.append(fixtureCurrent)
 
         stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, fixtures)
         MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive, ext)
         stage.Save()
         return url
 
-    def _get_layer(scene: ET.Element) -> ET.Element:
-        # According to spec, must contain exactly 1 layer
-        layers: ET.Element = scene.find("Layers")
-        layer: Layer = Layer(layers.find("Layer"))
-        return layer
+    def _get_layer(scene: ET.Element) -> List[Layer]:
+        layersNode: ET.Element = scene.find("Layers")
+        layerNodes: ET.Element = layersNode.findall("Layer")
+        layers: List[Layer] = []
+        for layerNode in layerNodes:
+            layer: Layer = Layer(layerNode)
+            layers.append(layer)
+        return layers
 
     def _get_fixtures(layer: Layer) -> List[Fixture]:
         childlist = layer.get_node().find("ChildList")
