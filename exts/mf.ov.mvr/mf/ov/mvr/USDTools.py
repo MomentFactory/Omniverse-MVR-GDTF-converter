@@ -6,6 +6,8 @@ from pxr import Gf, Tf, Sdf, Usd, UsdGeom
 
 class USDTools:
     def make_name_valid(name: str) -> str:
+        if name[:1].isdigit():
+            name = "_" + name
         return Tf.MakeValidIdentifier(unidecode(name))
 
     def get_or_create_stage(url: str) -> Usd.Stage:

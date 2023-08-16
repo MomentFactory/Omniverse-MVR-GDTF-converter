@@ -8,6 +8,8 @@ from pxr import Gf, Tf, Sdf, UsdLux, Usd, UsdGeom
 
 class USDTools:
     def make_name_valid(name: str) -> str:
+        if name[:1].isdigit():
+            name = "_" + name
         return Tf.MakeValidIdentifier(unidecode(name))
 
     def get_context():
