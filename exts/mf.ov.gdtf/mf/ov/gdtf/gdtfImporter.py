@@ -109,6 +109,7 @@ class GDTFImporter:
                 temp_export_path_gltf = tmp_export_path[:-4] + ".gltf"
                 convert_3ds_to_gltf(tmp_export_path, temp_export_path_gltf)
                 model.set_tmpdir_filepath(Filepath(temp_export_path_gltf))
+                model.set_converted_from_3ds()
                 os.remove(tmp_export_path)
             else:
                 logger = logging.getLogger(__name__)
