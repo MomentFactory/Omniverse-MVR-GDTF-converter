@@ -20,8 +20,14 @@ class USDTools:
             stage.Save()
             return stage
 
-    def add_fixture_xform(stage: Usd.Stage, name: str) -> UsdGeom.Xform:
-        path = stage.GetDefaultPrim().GetPath().AppendPath(name)
+    def add_scope(stage: Usd.Stage, name: str) -> UsdGeom.Scope:
+        default_prim_path: Sdf.Path = stage.GetDefaultPrim().GetPrimPath()
+        scope_path: Sdf.Path = default_prim_path.AppendPath(name)
+        scope: UsdGeom.Scope = UsdGeom.Scope.Define(stage, scope_path)
+        return scope
+
+    def add_fixture_xform(stage: Usd.Stage, scope: UsdGeom.Scope, name: str) -> UsdGeom.Xform:
+        path = scope.GetPath().AppendPath(name)
         xform: UsdGeom.Xform = UsdGeom.Xform.Define(stage, path)
         return xform
 
