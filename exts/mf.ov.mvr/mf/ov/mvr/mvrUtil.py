@@ -6,19 +6,6 @@ from pxr import Usd, Sdf
 from .USDTools import USDTools
 
 
-class Layer:
-    def __init__(self, node: ET.Element):
-        self._name = node.attrib["name"]
-        self._uuid = node.attrib["uuid"]
-        self._node = node
-
-    def get_node(self) -> ET.Element:
-        return self._node
-
-    def get_name_usd(self) -> str:
-        return USDTools.make_name_valid(self._name)
-
-
 class Fixture:
     def __init__(self, node: ET.Element):
         self._root = node
@@ -141,3 +128,25 @@ class Fixture:
     def _set_attribute_floatarray_if_valid(self, prim: Usd.Prim, name: str, value: List[float]):
         if value is not None and len(value) > 0:
             USDTools.set_fixture_attribute(prim, name, Sdf.ValueTypeNames.FloatArray, value)
+
+
+class Layer:
+    def __init__(self, node: ET.Element):
+        self._name = node.attrib["name"]
+        self._uuid = node.attrib["uuid"]
+        self._node = node
+        self._fixtures = []
+
+    def get_name_usd(self) -> str:
+        return USDTools.make_name_valid(self._name)
+
+    def find_fixtures(self):
+        childlist = self._node.find("ChildList")
+        fixtures = childlist.findall("Fixture")
+        self._fixtures = [Fixture(x) for x in fixtures]
+
+    def fixtures_len(self) -> int:
+        return len(self._fixtures)
+
+    def get_fixtures(self) -> List[Fixture]:
+        return self._fixtures

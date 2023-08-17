@@ -16,6 +16,13 @@ class GLTFImporter:
 
         for model in models:
             file: Filepath = model.get_tmpdir_filepath()
+            if model.get_converted_from_3ds():
+                bin_file = file.basename[:-5] + ".bin"
+                bin_path = output_dir + bin_file
+                if bin_file not in relative_paths_in_output_dir:
+                    input_path = file.fullpath[:-5] + ".bin"
+                    result = result = omni.client.copy(input_path, bin_path, omni.client.CopyBehavior.OVERWRITE)
+
             output_file = file.basename
             output_path = output_dir + output_file
             if output_file not in relative_paths_in_output_dir:
