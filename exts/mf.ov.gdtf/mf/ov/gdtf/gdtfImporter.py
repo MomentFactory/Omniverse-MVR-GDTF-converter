@@ -128,7 +128,8 @@ class GDTFImporter:
         GDTFImporter._add_gltf_reference(stage, geometries)
         GDTFImporter._apply_gltf_scale(stage, geometries)
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
-        GDTFImporter._add_light_to_hierarchy(stage, beams)
+        GDTFImporter._add_light_to_hierarchy(stage, beams, geometries)
+
         return url
 
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
@@ -224,8 +225,27 @@ class GDTFImporter:
 
         stage.Save()
 
-    def _add_light_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
+    def _add_light_to_hierarchy(stage: Usd.Stage, beams: List[Beam], geometries: List[Geometry]):
+        if len(beams) > 0:
+            GDTFImporter._add_beam_to_hierarchy(stage, beams)
+        else:
+            GDTFImporter._add_default_light_to_hierarchy(stage, geometries)
+
+    def _add_beam_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
         for beam in beams:
-            USDTools.add_light(stage, beam.get_stage_path(), beam.get_position(), beam.get_radius())
+            USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position(), beam.get_radius())
+        stage.Save()
+
+    def _add_default_light_to_hierarchy(stage: Usd.Stage, geometries: List[Geometry]):
+        deepest_geom = geometries[-1]
+        max_depth = deepest_geom.get_depth()
+        for geom in reversed(geometries):
+            depth = geom.get_depth()
+            if (depth > max_depth):
+                deepest_geom = geom
+                max_depth = depth
+        light_stage_path = deepest_geom.get_stage_path() + "/Beam"
+        model = deepest_geom.get_model()
+        USDTools.add_light_default(stage, light_stage_path, model.get_height(), model.get_width())
         stage.Save()
     # endregion
