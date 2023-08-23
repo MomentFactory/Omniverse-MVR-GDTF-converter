@@ -104,3 +104,18 @@ class Geometry:
 
     def get_xform_parent(self) -> UsdGeom.Xform:
         return self._xform_parent
+
+class Beam:
+    def __init__(self, geometry: Geometry, node: ET.Element):
+        self._radius = float(node.attrib["BeamRadius"])
+        self._position = geometry.get_position()
+        self._stage_path = geometry.get_stage_path()
+
+    def get_radius(self) -> float:
+        return self._radius
+
+    def get_position(self) -> str:
+        return self._position
+
+    def get_stage_path(self) -> str:
+        return self._stage_path

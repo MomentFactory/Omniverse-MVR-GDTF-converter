@@ -89,12 +89,21 @@ class USDTools:
         # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
         return gf_matrix.GetTranspose()
 
-    def add_light(stage: Usd.Stage, path: str, height: float, diameter: float):
+    def add_light(stage: Usd.Stage, path: str, position: str, radius: float):
         scale = USDTools.get_applied_scale(stage, 1)
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
+
+        np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(position)
+        gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, scale)
+        rotation: Gf.Rotation = gf_matrix.ExtractRotation()
+        euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+        rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
+        translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
+        rotate = euler + Gf.Vec3d(-90, 0, 0)
+
         light.ClearXformOpOrder()  # Prevent error when overwritting
-        light.AddTranslateOp().Set(Gf.Vec3d(0, -height * 0.5 * scale, 0))
-        light.AddRotateXYZOp().Set(Gf.Vec3d(-90, 0, 0))
-        light.AddScaleOp().Set(Gf.Vec3d(diameter * scale, diameter * scale, 1))
+        light.AddTranslateOp().Set(translation)
+        light.AddRotateXYZOp().Set(rotate)
+        light.AddScaleOp().Set(Gf.Vec3d(radius * 2 * scale, radius * 2 * scale, 1))
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
