@@ -58,7 +58,7 @@ class Model:
         return self._width
 
 
-class GeometryAxis:
+class Geometry:
     def __init__(self, node: ET.Element):
         self._name: str = node.attrib["Name"]
         self._model_id: str = get_attrib_if_exists(node, "Model")

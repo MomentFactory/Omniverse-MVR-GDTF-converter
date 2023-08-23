@@ -12,7 +12,7 @@ from zipfile import ZipFile
 from pxr import Gf, Usd, UsdGeom
 
 from .filepathUtility import Filepath
-from .gdtfUtil import Model, GeometryAxis
+from .gdtfUtil import Model, Geometry
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -124,7 +124,7 @@ class GDTFImporter:
     def _convert_gdtf_usd(output_dir: str, filename: str, ext: str, root: ET.Element, models: List[Model]) -> str:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
-        geometries: List[GeometryAxis] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
+        geometries: List[Geometry] = GDTFImporter._get_geometry_hierarchy(root, models, stage)
         GDTFImporter._add_gltf_reference(stage, geometries)
         GDTFImporter._apply_gltf_scale(stage, geometries)
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
@@ -134,21 +134,22 @@ class GDTFImporter:
     def _get_or_create_gdtf_usd(url: str) -> Usd.Stage:
         return USDTools.get_or_create_stage(url)
 
-    def _get_geometry_hierarchy(root: ET.Element, models: List[Model], stage: Usd.Stage) -> List[GeometryAxis]:
+    def _get_geometry_hierarchy(root: ET.Element, models: List[Model], stage: Usd.Stage) -> List[Geometry]:
         node_fixture: ET.Element = root.find("FixtureType")
         node_geometries = node_fixture.find("Geometries")
         default_prim_path = stage.GetDefaultPrim().GetPath()
-        geometries: List[GeometryAxis] = []
+        geometries: List[Geometry] = []
         GDTFImporter._get_geometry_hierarchy_recursive(node_geometries, models, geometries, default_prim_path, 0)
         return geometries
 
-    def _get_geometry_hierarchy_recursive(parent_node: ET.Element, models: List[Model], geometries: List[GeometryAxis],
+    def _get_geometry_hierarchy_recursive(parent_node: ET.Element, models: List[Model], geometries: List[Geometry],
                                           path: str, depth: int):
         child_nodes_geometry = parent_node.findall("Geometry")
         child_nodes_axis = parent_node.findall("Axis")
-        child_nodes = child_nodes_geometry + child_nodes_axis
+        # child_nodes_beam = parent_node.findall("Beam")
+        child_nodes = child_nodes_geometry + child_nodes_axis # + child_nodes_beam
         for child_node in child_nodes:
-            geometry: GeometryAxis = GeometryAxis(child_node)
+            geometry: Geometry = Geometry(child_node)
             model_id: str = geometry.get_model_id()
             model: Model = next((model for model in models if model.get_name() == model_id), None)
             if model is not None:
@@ -159,7 +160,7 @@ class GDTFImporter:
                 geometries.append(geometry)
                 GDTFImporter._get_geometry_hierarchy_recursive(child_node, models, geometries, stage_path, depth + 1)
 
-    def _add_gltf_reference(stage: Usd.Stage, geometries: List[GeometryAxis]):
+    def _add_gltf_reference(stage: Usd.Stage, geometries: List[Geometry]):
         stage_path = Filepath(USDTools.get_stage_directory(stage))
         for geometry in geometries:
             model: Model = geometry.get_model()
@@ -170,7 +171,7 @@ class GDTFImporter:
             geometry.set_xform_model(xform_model)
         stage.Save()
 
-    def _apply_gltf_scale(stage: Usd.Stage, geometries: List[GeometryAxis]):
+    def _apply_gltf_scale(stage: Usd.Stage, geometries: List[Geometry]):
         stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
         scale_offset = UsdGeom.LinearUnits.millimeters
         scale = scale_offset / stage_metersPerUnit
@@ -184,7 +185,7 @@ class GDTFImporter:
 
         stage.Save()
 
-    def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[GeometryAxis]):
+    def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[Geometry]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
         gdtf_scale = 1  # GDTF dimensions are in meters
         applied_scale = USDTools.get_applied_scale(stage, gdtf_scale)
@@ -208,7 +209,7 @@ class GDTFImporter:
 
         stage.Save()
 
-    def _add_light_to_hierarchy(stage: Usd.Stage, geometries: List[GeometryAxis]):
+    def _add_light_to_hierarchy(stage: Usd.Stage, geometries: List[Geometry]):
         deepest_geom = geometries[-1]
         max_depth = deepest_geom.get_depth()
         for geom in reversed(geometries):
