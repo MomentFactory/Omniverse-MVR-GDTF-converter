@@ -146,35 +146,40 @@ class GDTFImporter:
 
     def _get_stage_hierarchy_recursive(parent_node: ET.Element, models: List[Model], geometries: List[Geometry],
                                        beams: List[Beam], path: str, depth: int):
-        child_nodes_geometry = parent_node.findall("Geometry")
-        child_nodes_axis = parent_node.findall("Axis")
-        child_nodes_beam = parent_node.findall("Beam")
-        child_nodes = child_nodes_geometry + child_nodes_axis + child_nodes_beam
-        for child_node in child_nodes:
-            geometry: Geometry = Geometry(child_node)
-            model_id: str = geometry.get_model_id()
-            model: Model = next((model for model in models if model.get_name() == model_id), None)
-            if model is not None and model.has_file():
-                geometry.set_model(model)
-                stage_path = f"{path}/{model.get_name_usd()}"
-                geometry.set_stage_path(stage_path)
-                geometry.set_depth(depth)
-                geometries.append(geometry)
-                GDTFImporter._get_stage_hierarchy_recursive(child_node, models, geometries, beams, stage_path, depth + 1)
-            else:
-                if model_id.lower() == "pigtail":
-                    pass  # Skip pigtail geometry
-                elif model_id.lower() == "beam":
-                    stage_path = f"{path}/beam"
-                    geometry.set_stage_path(stage_path)
-                    beam: Beam = Beam(geometry, child_node)
-                    beams.append(beam)
-                elif model is not None and not model.has_file():
-                    logger = logging.getLogger(__name__)
-                    logger.warn(f"No file found for {model_id}, skipping.")
+        geometry_filter: List[str] = ['Geometry', 'Axis', 'Beam', 'Inventory']
+        for child_node in list(parent_node):
+            if 'Model' in child_node.attrib:
+                if child_node.tag not in geometry_filter:
+                    # Pass through (might want to add an xform)
+                    GDTFImporter._get_stage_hierarchy_recursive(child_node, models, geometries, beams, path, depth + 1)
                 else:
-                    # Probably could just be a transform
-                    pass
+                    geometry: Geometry = Geometry(child_node)
+                    model_id: str = geometry.get_model_id()
+                    model: Model = next((model for model in models if model.get_name() == model_id), None)
+                    if model is not None and model.has_file():
+                        geometry.set_model(model)
+                        stage_path = f"{path}/{model.get_name_usd()}"
+                        geometry.set_stage_path(stage_path)
+                        geometry.set_depth(depth)
+                        geometries.append(geometry)
+                        GDTFImporter._get_stage_hierarchy_recursive(child_node, models, geometries, beams, stage_path, depth + 1)
+                    else:
+                        if model_id.lower() == "pigtail":
+                            pass  # Skip pigtail geometry
+                        elif model_id.lower() == "beam":
+                            stage_path = f"{path}/beam"
+                            geometry.set_stage_path(stage_path)
+                            beam: Beam = Beam(geometry, child_node)
+                            beams.append(beam)
+                        elif model is not None and not model.has_file():
+                            logger = logging.getLogger(__name__)
+                            logger.warn(f"No file found for {model_id}, skipping.")
+                        else:
+                            # Probably could just be a transform
+                            pass
+            else:
+                # Probably could just be a transform
+                pass
 
     def _add_gltf_reference(stage: Usd.Stage, geometries: List[Geometry]):
         stage_path = Filepath(USDTools.get_stage_directory(stage))
@@ -218,7 +223,14 @@ class GDTFImporter:
         if len(beams) > 0:
             GDTFImporter._add_beam_to_hierarchy(stage, beams)
         else:
-            GDTFImporter._add_default_light_to_hierarchy(stage, geometries)
+            # Some gdtf files only represents brackets and such. They contain only "Inventory" geometry.
+            # We don't want to add a light source to those.
+            has_not_inventory_geometry = False
+            for geometry in geometries:
+                if geometry.get_tag() != 'Inventory':
+                    has_not_inventory_geometry = True
+            if has_not_inventory_geometry:
+                GDTFImporter._add_default_light_to_hierarchy(stage, geometries)
 
     def _add_beam_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
         for beam in beams:
