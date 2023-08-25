@@ -63,6 +63,10 @@ class Geometry:
         self._name: str = node.attrib["Name"]
         self._model_id: str = get_attrib_if_exists(node, "Model")
         self._position_matrix = node.attrib["Position"]
+        self._tag = node.tag
+
+    def get_tag(self) -> str:
+        return self._tag
 
     def get_name(self) -> str:
         return self._name
