@@ -37,74 +37,83 @@ class MVRImporter:
 
     def convert_mvr_usd(output_dir: str, filename: str, ext: str, root: ET.Element, archive: ZipFile) -> str:
         scene: ET.Element = root.find("Scene")
-        layer: Layer = MVRImporter._get_layer(scene)
-        fixtures: List[Fixture] = MVRImporter._get_fixtures(layer)
+        layers: List[Layer] = MVRImporter._get_layers(scene)
+        for layer in layers:
+            layer.find_fixtures()
 
-        stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, fixtures)
-        MVRImporter._convert_gdtf(stage, fixtures, output_dir, archive, ext)
+        stage, url = MVRImporter._make_mvr_stage(output_dir, filename, ext, layers)
+        MVRImporter._convert_gdtf(stage, layers, output_dir, archive, ext)
         stage.Save()
         return url
 
-    def _get_layer(scene: ET.Element) -> ET.Element:
-        # According to spec, must contain exactly 1 layer
-        layers: ET.Element = scene.find("Layers")
-        layer: Layer = Layer(layers.find("Layer"))
-        return layer
+    def _get_layers(scene: ET.Element) -> List[Layer]:
+        layersNode: ET.Element = scene.find("Layers")
+        layerNodes: ET.Element = layersNode.findall("Layer")
+        layers: List[Layer] = []
+        for layerNode in layerNodes:
+            layer: Layer = Layer(layerNode)
+            layers.append(layer)
+        return layers
 
-    def _get_fixtures(layer: Layer) -> List[Fixture]:
-        childlist = layer.get_node().find("ChildList")
-        fixtures = childlist.findall("Fixture")
-        return [Fixture(x) for x in fixtures]
-
-    def _make_mvr_stage(output_dir: str, filename: str, ext: str, fixtures: List[str]) -> Tuple[Usd.Stage, str]:
+    def _make_mvr_stage(output_dir: str, filename: str, ext: str, layers: List[Layer]) -> Tuple[Usd.Stage, str]:
         url: str = output_dir + filename + ext
         stage: Usd.Stage = USDTools.get_or_create_stage(url)
-        MVRImporter._add_fixture_xform(stage, fixtures)
+        MVRImporter._add_fixture_xform(stage, layers)
 
         return stage, url
 
-    def _add_fixture_xform(stage: Usd.Stage, fixtures: List[Fixture]):
+    def _add_fixture_xform(stage: Usd.Stage, layers: List[Layer]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
         mvr_scale = 0.001  # MVR dimensions are in milimeters
         applied_scale: float = USDTools.get_applied_scale(stage, mvr_scale)
 
-        for fixture in fixtures:
-            xform: UsdGeom.Xform = USDTools.add_fixture_xform(stage, fixture.get_unique_name_usd())
-            fixture.set_stage_path(xform.GetPrim().GetPath())
-            np_matrix: np.matrix = USDTools.np_matrix_from_mvr(fixture.get_matrix())
-            gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_mvr(np_matrix, applied_scale)
+        for layer in layers:
+            if layer.fixtures_len() > 0:
+                scope: UsdGeom.Scope = USDTools.add_scope(stage, layer.get_name_usd())
+                for fixture in layer.get_fixtures():
+                    xform: UsdGeom.Xform = USDTools.add_fixture_xform(stage, scope, fixture.get_unique_name_usd())
+                    fixture.set_stage_path(xform.GetPrim().GetPath())
+                    np_matrix: np.matrix = USDTools.np_matrix_from_mvr(fixture.get_matrix())
+                    gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_mvr(np_matrix, applied_scale)
 
-            rotation: Gf.Rotation = gf_matrix.ExtractRotation()
-            euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+                    rotation: Gf.Rotation = gf_matrix.ExtractRotation()
+                    euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
 
-            # Z-up to Y-up
-            # TODO: Validate with stage up axis
-            translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
-            rotate = rotate_minus90deg_xaxis * euler
+                    # Z-up to Y-up
+                    # TODO: Validate with stage up axis
+                    translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
+                    rotate = rotate_minus90deg_xaxis * euler
 
-            xform.ClearXformOpOrder()  # Prevent error when overwritting
-            xform.AddTranslateOp().Set(translation)
-            xform.AddRotateXYZOp().Set(rotate)
+                    xform.ClearXformOpOrder()  # Prevent error when overwritting
+                    xform.AddTranslateOp().Set(translation)
+                    xform.AddRotateXYZOp().Set(rotate)
 
-            fixture.apply_attributes_to_prim(xform.GetPrim())
+                    fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
 
-    def _convert_gdtf(stage: Usd.Stage, fixtures: List[Fixture], mvr_output_dir: str, archive: ZipFile, ext: str):
-        gdtf_spec_uniq: List[str] = MVRImporter._get_gdtf_to_import(fixtures)
+    def _convert_gdtf(stage: Usd.Stage, layers: List[Layer], mvr_output_dir: str, archive: ZipFile, ext: str):
+        gdtf_spec_uniq: List[str] = MVRImporter._get_gdtf_to_import(layers)
         gdtf_output_dir = mvr_output_dir
         for gdtf_spec in gdtf_spec_uniq:
             gdtf.GDTFImporter.convert_from_mvr(gdtf_spec, gdtf_output_dir, archive)
-        MVRImporter._add_gdtf_reference(fixtures, stage, ext)
+        MVRImporter._add_gdtf_reference(layers, stage, ext)
 
-    def _get_gdtf_to_import(fixtures: List[Fixture]) -> List[str]:
-        fixture_names = [x.get_spec_name() for x in fixtures]
-        fixture_names_set = set(fixture_names)
-        fixture_name_uniq = list(fixture_names_set)
-        return fixture_name_uniq
+    def _get_gdtf_to_import(layers: List[Layer]) -> List[str]:
+        result: List[str] = []
+        for layer in layers:
+            if layer.fixtures_len() > 0:
+                current_fixture_names = [x.get_spec_name() for x in layer.get_fixtures()]
+                current_fixture_names_set = set(current_fixture_names)
+                current_fixture_names_uniq = list(current_fixture_names_set)
+                for current_fixture_name_uniq in current_fixture_names_uniq:
+                    result.append(current_fixture_name_uniq)
+        return result
 
-    def _add_gdtf_reference(fixtures: List[Fixture], stage: Usd.Stage, ext: str):
-        for fixture in fixtures:
-            spec = fixture.get_spec_name()
-            relative_path = f"./{spec}.gdtf/{spec}{ext}"
-            stage_path = fixture.get_stage_path()
-            USDTools.add_reference(stage, relative_path, stage_path)
+    def _add_gdtf_reference(layers: List[Layer], stage: Usd.Stage, ext: str):
+        for layer in layers:
+            if layer.fixtures_len() > 0:
+                for fixture in layer.get_fixtures():
+                    spec = fixture.get_spec_name()
+                    relative_path = f"./{spec}.gdtf/{spec}{ext}"
+                    stage_path = fixture.get_stage_path()
+                    USDTools.add_reference(stage, relative_path, stage_path)
