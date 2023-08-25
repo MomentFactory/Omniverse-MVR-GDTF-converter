@@ -206,7 +206,7 @@ class GDTFImporter:
         axis_matrix = USDTools.get_axis_rotation_matrix()
 
         for geometry in geometries:
-            translation, rotation = USDTools.compute_xform_values(geometry.get_position(), applied_scale, axis_matrix)
+            translation, rotation = USDTools.compute_xform_values(geometry.get_position_matrix(), applied_scale, axis_matrix)
             xform: UsdGeom.Xform = geometry.get_xform_parent()
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
@@ -222,7 +222,7 @@ class GDTFImporter:
 
     def _add_beam_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
         for beam in beams:
-            USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position(), beam.get_radius())
+            USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position_matrix(), beam.get_radius())
         stage.Save()
 
     def _add_default_light_to_hierarchy(stage: Usd.Stage, geometries: List[Geometry]):

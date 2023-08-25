@@ -89,12 +89,13 @@ class USDTools:
         # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
         return gf_matrix.GetTranspose()
 
-    def add_beam(stage: Usd.Stage, path: str, position: str, radius: float):
+    def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float):
         applied_scale = USDTools.compute_applied_scale(stage)
         axis_matrix = USDTools.get_axis_rotation_matrix()
 
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
-        translation, rotation = USDTools.compute_xform_values(position, applied_scale, axis_matrix)
+        translation, rotation = USDTools.compute_xform_values(position_matrix, applied_scale, axis_matrix)
+        rotation += Gf.Vec3d(-90, 0, 0)
 
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(translation)
@@ -125,8 +126,8 @@ class USDTools:
                                               0, -1, 0)
         return rotate_minus90deg_xaxis
 
-    def compute_xform_values(matrix: str, scale: float, axis_matrix: Gf.Matrix3d) -> (Gf.Vec3f, Gf.Vec3f):
-        np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(matrix)
+    def compute_xform_values(position_matrix: str, scale: float, axis_matrix: Gf.Matrix3d) -> (Gf.Vec3d, Gf.Vec3d):
+        np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(position_matrix)
         gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, scale)
 
         rotation: Gf.Rotation = gf_matrix.ExtractRotation()
