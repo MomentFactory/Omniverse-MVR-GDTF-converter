@@ -2,7 +2,6 @@ from io import BytesIO
 import logging
 import numpy as np
 import os
-import shutil
 import subprocess
 import tempfile
 from typing import List
@@ -64,7 +63,6 @@ class GDTFImporter:
         models_filtered: List[Model] = GDTFImporter._filter_models(models)
         GDTFImporter._extract_gltf_to_tmp(models_filtered, archive)
         GDTFImporter._convert_gltf(models_filtered, output_dir)
-        shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return models_filtered
 
     def _get_model_nodes(root: ET.Element) -> List[Model]:
