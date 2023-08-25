@@ -202,26 +202,15 @@ class GDTFImporter:
         stage.Save()
 
     def _apply_gdtf_matrix(stage: Usd.Stage, geometries: List[Geometry]):
-        rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
-        gdtf_scale = 1  # GDTF dimensions are in meters
-        applied_scale = USDTools.get_applied_scale(stage, gdtf_scale)
+        applied_scale = USDTools.compute_applied_scale(stage)
+        axis_matrix = USDTools.get_axis_rotation_matrix()
 
         for geometry in geometries:
+            translation, rotation = USDTools.compute_xform_values(geometry.get_position(), applied_scale, axis_matrix)
             xform: UsdGeom.Xform = geometry.get_xform_parent()
-            np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(geometry.get_position())
-            gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, applied_scale)
-
-            rotation: Gf.Rotation = gf_matrix.ExtractRotation()
-            euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
-
-            # Z-up to Y-up
-            # TODO: Validate with stage up axis
-            translation = rotate_minus90deg_xaxis * gf_matrix.ExtractTranslation()
-            rotate = rotate_minus90deg_xaxis * euler
-
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
-            xform.AddRotateXYZOp().Set(rotate)
+            xform.AddRotateXYZOp().Set(rotation)
 
         stage.Save()
 
