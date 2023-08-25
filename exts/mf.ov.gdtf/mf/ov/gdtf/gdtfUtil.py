@@ -58,11 +58,11 @@ class Model:
         return self._width
 
 
-class GeometryAxis:
+class Geometry:
     def __init__(self, node: ET.Element):
         self._name: str = node.attrib["Name"]
         self._model_id: str = get_attrib_if_exists(node, "Model")
-        self._position = node.attrib["Position"]
+        self._position_matrix = node.attrib["Position"]
 
     def get_name(self) -> str:
         return self._name
@@ -72,8 +72,8 @@ class GeometryAxis:
             return self._model_id
         return self._name
 
-    def get_position(self) -> str:
-        return self._position
+    def get_position_matrix(self) -> str:
+        return self._position_matrix
 
     def set_model(self, model: Model):
         self._model = model
@@ -104,3 +104,18 @@ class GeometryAxis:
 
     def get_xform_parent(self) -> UsdGeom.Xform:
         return self._xform_parent
+
+class Beam:
+    def __init__(self, geometry: Geometry, node: ET.Element):
+        self._radius = float(node.attrib["BeamRadius"])
+        self._position_matrix = geometry.get_position_matrix()
+        self._stage_path = geometry.get_stage_path()
+
+    def get_radius(self) -> float:
+        return self._radius
+
+    def get_position_matrix(self) -> str:
+        return self._position_matrix
+
+    def get_stage_path(self) -> str:
+        return self._stage_path

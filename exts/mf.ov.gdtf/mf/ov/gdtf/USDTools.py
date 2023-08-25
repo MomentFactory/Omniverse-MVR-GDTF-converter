@@ -89,12 +89,51 @@ class USDTools:
         # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
         return gf_matrix.GetTranspose()
 
-    def add_light(stage: Usd.Stage, path: str, height: float, diameter: float):
+    def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float):
+        applied_scale = USDTools.compute_applied_scale(stage)
+        axis_matrix = USDTools.get_axis_rotation_matrix()
+
+        light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
+        translation, rotation = USDTools.compute_xform_values(position_matrix, applied_scale, axis_matrix)
+        rotation += Gf.Vec3d(-90, 0, 0)
+
+        light.ClearXformOpOrder()  # Prevent error when overwritting
+        light.AddTranslateOp().Set(translation)
+        light.AddRotateXYZOp().Set(rotation)
+        light.AddScaleOp().Set(Gf.Vec3d(radius * 2 * applied_scale, radius * 2 * applied_scale, 1))
+        light.CreateIntensityAttr().Set(60_000)
+        light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
+
+    def add_light_default(stage: Usd.Stage, path: str, height: float, diameter: float):
         scale = USDTools.get_applied_scale(stage, 1)
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
+
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(Gf.Vec3d(0, -height * 0.5 * scale, 0))
         light.AddRotateXYZOp().Set(Gf.Vec3d(-90, 0, 0))
         light.AddScaleOp().Set(Gf.Vec3d(diameter * scale, diameter * scale, 1))
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
+
+    def compute_applied_scale(stage: Usd.Stage) -> float:
+        gdtf_scale = 1  # GDTF dimensions are in meters
+        applied_scale = USDTools.get_applied_scale(stage, gdtf_scale)
+        return applied_scale
+
+    def get_axis_rotation_matrix() -> Gf.Matrix3d:
+        rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0,
+                                              0, 0, 1,
+                                              0, -1, 0)
+        return rotate_minus90deg_xaxis
+
+    def compute_xform_values(position_matrix: str, scale: float, axis_matrix: Gf.Matrix3d) -> (Gf.Vec3d, Gf.Vec3d):
+        np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(position_matrix)
+        gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, scale)
+
+        rotation: Gf.Rotation = gf_matrix.ExtractRotation()
+        euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
+
+        translation_value = axis_matrix * gf_matrix.ExtractTranslation()
+        rotation_value = axis_matrix * euler
+
+        return translation_value, rotation_value
