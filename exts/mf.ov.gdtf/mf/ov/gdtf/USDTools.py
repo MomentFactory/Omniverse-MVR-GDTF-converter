@@ -54,16 +54,19 @@ class USDTools:
         stage_scale = UsdGeom.GetStageMetersPerUnit(stage)
         return scale_factor / stage_scale
 
-    def apply_scale_xform_op(xform: UsdGeom.Xform, value: Gf.Vec3f):
+    def apply_scale_xform_op(xform: UsdGeom.Xform, scale: float):
         xform_ordered_ops: List[UsdGeom.XformOp] = xform.GetOrderedXformOps()
         found_op = False
         for xform_op in xform_ordered_ops:
             if xform_op.GetOpType() == UsdGeom.XformOp.TypeScale:
-                xform_op.Set(value)
+                current_scale: Gf.Vec3d = xform_op.Get()
+                applied_scale = current_scale * scale
+                xform_op.Set(applied_scale)
                 found_op = True
 
         if not found_op:
-            xform.AddScaleOp().Set(value)
+            forced_scale = Gf.Vec3d(scale, scale, scale)
+            xform.AddScaleOp().Set(forced_scale)
 
     def np_matrix_from_gdtf(value: str) -> np.matrix:
         # GDTF Matrix is: 4x4, row-major, Right-Handed, Z-up (Distance Unit not specified, but mm implied)

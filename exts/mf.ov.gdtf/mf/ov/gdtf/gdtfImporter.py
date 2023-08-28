@@ -197,15 +197,13 @@ class GDTFImporter:
 
     def _apply_gltf_scale(stage: Usd.Stage, geometries: List[Geometry]):
         stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
-        scale_offset = UsdGeom.LinearUnits.millimeters
-        scale = scale_offset / stage_metersPerUnit
-        scaleValue = Gf.Vec3f(scale, scale, scale)
-        # TODO: Some conversion add a xform over the mesh with a scale on it, we should prevent that,
-        # or include the reverse operation into scaleValue: scaleValue = scaleValue * (1 / xform.scale)
+        # gltf_scale = UsdGeom.LinearUnits.millimeters
+        scale = 1 / stage_metersPerUnit
 
         for geometry in geometries:
-            xform = geometry.get_xform_model()
-            USDTools.apply_scale_xform_op(xform, scaleValue)
+            if geometry.get_tag() != 'Beam':
+                xform = geometry.get_xform_model()
+                USDTools.apply_scale_xform_op(xform, scale)
 
         stage.Save()
 
