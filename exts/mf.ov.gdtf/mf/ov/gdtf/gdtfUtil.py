@@ -36,14 +36,14 @@ class Model:
     def set_tmpdir_filepath(self, path: Filepath):
         self._tmpdir_filepath = path
 
+    def get_tmpdir_filepath(self) -> Filepath:
+        return self._tmpdir_filepath
+
     def set_converted_from_3ds(self):
         self._converted_from_3ds = True
 
     def get_converted_from_3ds(self):
         return self._converted_from_3ds
-
-    def get_tmpdir_filepath(self) -> Filepath:
-        return self._tmpdir_filepath
 
     def set_converted_filepath(self, path: Filepath):
         self._converted_filepath = path

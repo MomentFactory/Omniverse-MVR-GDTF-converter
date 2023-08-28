@@ -81,11 +81,12 @@ class GDTFImporter:
                 filtered_models.append(model)
             elif model.get_name().lower() != "pigtail" and model.get_name().lower() != "beam":
                 logger = logging.getLogger(__name__)
-                logger.warn(f"File attribute empty for model node {model.get_name()}, skipping.")
+                logger.info(f"File attribute empty for model node {model.get_name()}, skipping.")
         return filtered_models
 
     def _extract_gltf_to_tmp(models: List[Model], gdtf_archive: ZipFile):
         namelist = gdtf_archive.namelist()
+        to_remove: List[Model] = []
 
         for model in models:
             filename = model.get_file()
@@ -112,6 +113,10 @@ class GDTFImporter:
             else:
                 logger = logging.getLogger(__name__)
                 logger.warn(f"No file found for {filename}, skipping.")
+                to_remove.append(model)
+
+        for model in to_remove:
+            models.remove(model)
 
     def _convert_gltf(models: List[Model], gdtf_output_dir):
         gltf_output_dir = gdtf_output_dir + "gltf/"
