@@ -75,11 +75,12 @@ class GDTFImporter:
         return models
 
     def _filter_models(models: List[Model]) -> List[Model]:
+        filters: List[str] = ['pigtail', 'beam']
         filtered_models: List[Model] = []
         for model in models:
             if model.has_file():
                 filtered_models.append(model)
-            elif model.get_name().lower() != "pigtail" and model.get_name().lower() != "beam":
+            elif model.get_name().lower() not in filters:
                 logger = logging.getLogger(__name__)
                 logger.info(f"File attribute empty for model node {model.get_name()}, skipping.")
         return filtered_models
