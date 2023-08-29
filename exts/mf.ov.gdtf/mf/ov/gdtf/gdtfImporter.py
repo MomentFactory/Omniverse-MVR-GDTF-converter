@@ -1,14 +1,12 @@
 from io import BytesIO
 import logging
-import numpy as np
 import os
 import subprocess
-import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
-from pxr import Gf, Usd, UsdGeom
+from pxr import Usd, UsdGeom
 
 from .filepathUtility import Filepath
 from .gdtfUtil import Model, Geometry, Beam
@@ -25,8 +23,6 @@ def convert_3ds_to_gltf(input, output):
 
 
 class GDTFImporter:
-    TMP_ARCHIVE_EXTRACT_DIR = f"{tempfile.gettempdir()}/MF.OV.GDTF/"
-
     def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> str:
         try:
             with ZipFile(file.fullpath, 'r') as archive:

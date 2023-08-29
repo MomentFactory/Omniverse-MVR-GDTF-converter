@@ -1,4 +1,3 @@
-from io import BytesIO
 import logging
 import omni.client
 import os
