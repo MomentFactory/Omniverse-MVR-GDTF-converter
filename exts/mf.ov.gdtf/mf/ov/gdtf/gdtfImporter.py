@@ -1,7 +1,5 @@
 from io import BytesIO
 import logging
-import os
-import subprocess
 from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
@@ -12,14 +10,6 @@ from .filepathUtility import Filepath
 from .gdtfUtil import Model, Geometry, Beam
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
-
-
-def convert_3ds_to_gltf(input, output):
-    path = __file__
-    my_env = os.environ.copy()
-    my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
-    scriptPath = path + "\\..\\gltf-exporter.py"
-    return subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
 
 
 class GDTFImporter:

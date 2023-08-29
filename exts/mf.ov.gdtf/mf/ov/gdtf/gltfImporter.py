@@ -79,7 +79,7 @@ class GLTFImporter:
         path = __file__
         my_env = os.environ.copy()
         my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
-        scriptPath = path + "\\..\\gltf-exporter.py"
+        scriptPath = path + "\\..\\3dsConverterScript.py"
         return subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
 
     def _convert_gltf(models: List[Model], gdtf_output_dir):
