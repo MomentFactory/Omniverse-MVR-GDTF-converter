@@ -4,7 +4,7 @@ from typing import List
 import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
-from pxr import Usd, UsdGeom
+from pxr import Gf, Sdf, Usd, UsdGeom
 
 from .filepathUtility import Filepath
 from .gdtfUtil import Model, Geometry, Beam
@@ -48,9 +48,9 @@ class GDTFImporter:
         stage: Usd.Stage = GDTFImporter._get_or_create_gdtf_usd(url)
         geometries, beams = GDTFImporter._get_stage_hierarchy(root, models, stage)
         GDTFImporter._add_gltf_reference(stage, geometries)
-        GDTFImporter._apply_gltf_scale(stage, geometries)
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
         GDTFImporter._add_light_to_hierarchy(stage, beams, geometries)
+        GDTFImporter._apply_gltf_scale(stage, geometries)
 
         return url
 
@@ -108,21 +108,26 @@ class GDTFImporter:
         for geometry in geometries:
             model: Model = geometry.get_model()
             relative_path: str = stage_path.get_relative_from(model.get_converted_filepath())
-            xform_parent, xform_model = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(),
-                                                               "/model")
+            xform_parent, xform_model = USDTools.add_reference(stage, relative_path, geometry.get_stage_path(), "/model")
+            xform_model.GetPrim().CreateAttribute("mf:gdtf:converter_from_3ds", Sdf.ValueTypeNames.Bool).Set(model.get_converted_from_3ds())
             geometry.set_xform_parent(xform_parent)
             geometry.set_xform_model(xform_model)
         stage.Save()
 
     def _apply_gltf_scale(stage: Usd.Stage, geometries: List[Geometry]):
-        stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
-        # gltf_scale = UsdGeom.LinearUnits.millimeters
-        scale = 1 / stage_metersPerUnit
+        world_xform: UsdGeom.Xform = UsdGeom.Xform(stage.GetDefaultPrim())
+        USDTools.apply_scale_xform_op(world_xform, 100) # mm to cm
 
+        converted_3ds = False
         for geometry in geometries:
-            if geometry.get_tag() != 'Beam':
-                xform = geometry.get_xform_model()
-                USDTools.apply_scale_xform_op(xform, scale)
+            model = geometry.get_model()
+            if model.get_converted_from_3ds():
+                converted_3ds = True
+        if converted_3ds:
+            for geometry in geometries:
+                if geometry.get_tag() != 'Beam':
+                    xform = geometry.get_xform_model()
+                    USDTools.apply_scale_xform_op(xform, 0.001)  # force mm
 
         stage.Save()
 
@@ -136,6 +141,7 @@ class GDTFImporter:
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
             xform.AddRotateXYZOp().Set(rotation)
+            xform.AddScaleOp().Set(Gf.Vec3d(1, 1, 1))
 
         stage.Save()
 
