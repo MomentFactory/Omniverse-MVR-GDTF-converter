@@ -87,6 +87,7 @@ class MVRImporter:
                     xform.ClearXformOpOrder()  # Prevent error when overwritting
                     xform.AddTranslateOp().Set(translation)
                     xform.AddRotateXYZOp().Set(rotate)
+                    # Scale Op is added in _add_gdtf_reference
 
                     fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
@@ -117,3 +118,4 @@ class MVRImporter:
                     relative_path = f"./{spec}.gdtf/{spec}{ext}"
                     stage_path = fixture.get_stage_path()
                     USDTools.add_reference(stage, relative_path, stage_path)
+                    USDTools.copy_gdtf_scale(stage, stage_path, relative_path)
