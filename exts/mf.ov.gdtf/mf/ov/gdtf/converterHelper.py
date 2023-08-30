@@ -5,6 +5,7 @@ import omni.kit.window.content_browser
 
 from .filepathUtility import Filepath
 from .gdtfImporter import GDTFImporter
+from .gltfImporter import GLTFImporter
 
 
 class ConverterHelper:
@@ -36,5 +37,5 @@ class ConverterHelper:
         for i in range(len(absolute_paths)):
             converted_assets[absolute_paths[i]] = self._create_import_task(absolute_paths[i], export_folder,
                                                                            hoops_context)
-        shutil.rmtree(GDTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
+        shutil.rmtree(GLTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return converted_assets
