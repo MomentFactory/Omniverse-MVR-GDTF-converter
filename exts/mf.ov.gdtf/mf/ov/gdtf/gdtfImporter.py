@@ -117,8 +117,8 @@ class GDTFImporter:
     def _apply_gltf_scale(stage: Usd.Stage, geometries: List[Geometry]):
         world_xform: UsdGeom.Xform = UsdGeom.Xform(stage.GetDefaultPrim())
         stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
-        stage_metesrPerUnit_inverse = 1 / stage_metersPerUnit
-        USDTools.apply_scale_xform_op(world_xform, stage_metesrPerUnit_inverse)
+        scale = 1 / stage_metersPerUnit
+        USDTools.apply_scale_xform_op(world_xform, scale)
 
         converted_3ds = False
         for geometry in geometries:
