@@ -58,7 +58,6 @@ class USDTools:
             np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), 0,
             np_matrix.item((3, 0)) * scale, np_matrix.item((3, 1)) * scale, np_matrix.item((3, 2)) * scale, 1
         )
-
         return gf_matrix
 
     def set_fixture_attribute(prim: Usd.Prim, attribute_name: str, attribute_type: Sdf.ValueTypeNames, attribute_value):
