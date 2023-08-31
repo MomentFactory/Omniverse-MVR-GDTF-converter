@@ -114,7 +114,6 @@ class USDTools:
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
 
-
     def compute_applied_scale(stage: Usd.Stage) -> float:
         gdtf_scale = 1  # GDTF dimensions are in meters
         applied_scale = USDTools.get_applied_scale(stage, gdtf_scale)
