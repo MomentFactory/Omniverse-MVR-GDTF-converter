@@ -75,21 +75,18 @@ class USDTools:
         value_alt = value_alt[:-1]  # Removes "}" suffix
         value_alt = value_alt.replace("}{", "; ")
         value_alt = value_alt.replace(",", " ")
-
         np_matrix: np.matrix = np.matrix(value_alt)
-        np_matrix.transpose()
         return np_matrix
 
     def gf_matrix_from_gdtf(np_matrix: np.matrix, scale: float) -> Gf.Matrix4d:
+        # Row major matrix
         gf_matrix = Gf.Matrix4d(
-            np_matrix.item((0, 0)), np_matrix.item((0, 1)), np_matrix.item((0, 2)), np_matrix.item((0, 3)),
-            np_matrix.item((1, 0)), np_matrix.item((1, 1)), np_matrix.item((1, 2)), np_matrix.item((1, 3)),
-            np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), np_matrix.item((2, 3)),
-            np_matrix.item((3, 0)), np_matrix.item((3, 1)), np_matrix.item((3, 2)), np_matrix.item((3, 3))
+            np_matrix.item((0, 0)), np_matrix.item((1, 0)), np_matrix.item((2, 0)), np_matrix.item((3, 0)),
+            np_matrix.item((0, 1)), np_matrix.item((1, 1)), np_matrix.item((2, 1)), np_matrix.item((3, 1)),
+            np_matrix.item((0, 2)), np_matrix.item((1, 2)), np_matrix.item((2, 2)), np_matrix.item((3, 2)),
+            np_matrix.item((0, 3)), np_matrix.item((1, 3)), np_matrix.item((2, 3)), np_matrix.item((3, 3))
         )
-
-        # Uses transpose because gdtf is row-major and faster to write than to rewrite the whole matrix constructor
-        return gf_matrix.GetTranspose()
+        return gf_matrix
 
     def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float):
         applied_scale = USDTools.compute_applied_scale(stage)
@@ -110,7 +107,7 @@ class USDTools:
     def _set_light_xform(light: UsdLux.DiskLight, translation: Gf.Vec3d, rotation: Gf.Vec3d, scale: Gf.Vec3d):
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(translation)
-        light.AddRotateXYZOp().Set(rotation)
+        light.AddRotateYXZOp().Set(rotation)
         light.AddScaleOp().Set(scale)
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
@@ -130,7 +127,7 @@ class USDTools:
         np_matrix: np.matrix = USDTools.np_matrix_from_gdtf(position_matrix)
         gf_matrix: Gf.Matrix4d = USDTools.gf_matrix_from_gdtf(np_matrix, scale)
 
-        rotation: Gf.Rotation = gf_matrix.ExtractRotation()
+        rotation: Gf.Rotation = gf_matrix.GetTranspose().ExtractRotation()
         euler: Gf.Vec3d = rotation.Decompose(Gf.Vec3d.XAxis(), Gf.Vec3d.YAxis(), Gf.Vec3d.ZAxis())
 
         translation_value = axis_matrix * gf_matrix.ExtractTranslation()

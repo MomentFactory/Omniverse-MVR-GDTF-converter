@@ -142,7 +142,7 @@ class GDTFImporter:
             xform: UsdGeom.Xform = geometry.get_xform_parent()
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
-            xform.AddRotateXYZOp().Set(rotation)
+            xform.AddRotateYXZOp().Set(rotation)
             xform.AddScaleOp().Set(Gf.Vec3d(1, 1, 1))
 
         stage.Save()
