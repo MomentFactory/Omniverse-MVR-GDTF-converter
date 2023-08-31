@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List, Tuple
 from unidecode import unidecode
+from urllib.parse import unquote
 
 import omni.usd
 from pxr import Gf, Tf, Sdf, UsdLux, Usd, UsdGeom
@@ -24,9 +25,9 @@ class USDTools:
             stage = USDTools.get_stage()
         root_layer = stage.GetRootLayer()
         repository_path = root_layer.realPath
-        repository_path_spaces = repository_path.replace("%20", " ")
-        dir_index = repository_path_spaces.rfind("/")
-        return repository_path_spaces[:dir_index + 1]
+        repository_path_unquoted = unquote(repository_path)
+        dir_index = repository_path_unquoted.rfind("/")
+        return repository_path_unquoted[:dir_index + 1]
 
     def get_or_create_stage(url: str) -> Usd.Stage:
         try:  # TODO: Better way to check if stage exists?
@@ -45,9 +46,9 @@ class USDTools:
         xform_parent: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
         xform_ref: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path + stage_subpath)
         xform_ref_prim: Usd.Prim = xform_ref.GetPrim()
-        unescaped_path: str = ref_path_relative.replace("%20", " ")
+        path_unquoted = unquote(ref_path_relative)
         references: Usd.References = xform_ref_prim.GetReferences()
-        references.AddReference(unescaped_path)
+        references.AddReference(path_unquoted)
         return xform_parent, xform_ref
 
     def get_applied_scale(stage: Usd.Stage, scale_factor: float):

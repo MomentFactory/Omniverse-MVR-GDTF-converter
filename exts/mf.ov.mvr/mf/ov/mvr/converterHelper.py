@@ -1,6 +1,5 @@
-import asyncio
 import logging
-from typing import Tuple
+from urllib.parse import unquote
 
 import omni.kit.window.content_browser
 
@@ -10,11 +9,11 @@ from .mvrImporter import MVRImporter
 
 class ConverterHelper:
     def _create_import_task(self, absolute_path, export_folder, _):
-        absolute_path = absolute_path.replace("%20", " ")
-        if absolute_path.startswith("file:/"):
-            path = absolute_path[6:]
+        absolute_path_unquoted = unquote(absolute_path)
+        if absolute_path_unquoted.startswith("file:/"):
+            path = absolute_path_unquoted[6:]
         else:
-            path = absolute_path
+            path = absolute_path_unquoted
 
         current_nucleus_dir = omni.kit.window.content_browser.get_content_window().get_current_directory()
 
