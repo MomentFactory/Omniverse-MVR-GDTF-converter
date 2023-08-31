@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List
 from unidecode import unidecode
+from urllib.parse import unquote
 
 from pxr import Gf, Tf, Sdf, Usd, UsdGeom
 
@@ -57,7 +58,6 @@ class USDTools:
             np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), 0,
             np_matrix.item((3, 0)) * scale, np_matrix.item((3, 1)) * scale, np_matrix.item((3, 2)) * scale, 1
         )
-
         return gf_matrix
 
     def set_fixture_attribute(prim: Usd.Prim, attribute_name: str, attribute_type: Sdf.ValueTypeNames, attribute_value):
@@ -65,9 +65,9 @@ class USDTools:
 
     def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str):
         xform_ref: UsdGeom.Xform = stage.GetPrimAtPath(stage_path)
-        unescaped_path: str = ref_path_relative.replace("%20", " ")
+        path_unquoted = unquote(ref_path_relative)
         references: Usd.References = xform_ref.GetReferences()
-        references.AddReference(unescaped_path)
+        references.AddReference(path_unquoted)
         stage.Save()
 
     def copy_gdtf_scale(mvr_stage: Usd.Stage, stage_prim_path: str, relative_path: str):
