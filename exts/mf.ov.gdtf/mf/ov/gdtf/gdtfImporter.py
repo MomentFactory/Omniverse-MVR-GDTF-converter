@@ -116,7 +116,9 @@ class GDTFImporter:
 
     def _apply_gltf_scale(stage: Usd.Stage, geometries: List[Geometry]):
         world_xform: UsdGeom.Xform = UsdGeom.Xform(stage.GetDefaultPrim())
-        USDTools.apply_scale_xform_op(world_xform, 100) # mm to cm
+        stage_metersPerUnit = UsdGeom.GetStageMetersPerUnit(stage)
+        stage_metesrPerUnit_inverse = 1 / stage_metersPerUnit
+        USDTools.apply_scale_xform_op(world_xform, stage_metesrPerUnit_inverse)
 
         converted_3ds = False
         for geometry in geometries:
@@ -127,7 +129,7 @@ class GDTFImporter:
             for geometry in geometries:
                 if geometry.get_tag() != 'Beam':
                     xform = geometry.get_xform_model()
-                    USDTools.apply_scale_xform_op(xform, 0.001)  # force mm
+                    USDTools.apply_scale_xform_op(xform, UsdGeom.LinearUnits.milimeters)  # force mm
 
         stage.Save()
 
