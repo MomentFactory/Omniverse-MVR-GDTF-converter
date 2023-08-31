@@ -129,7 +129,7 @@ class GDTFImporter:
             for geometry in geometries:
                 if geometry.get_tag() != 'Beam':
                     xform = geometry.get_xform_model()
-                    USDTools.apply_scale_xform_op(xform, UsdGeom.LinearUnits.milimeters)  # force mm
+                    USDTools.apply_scale_xform_op(xform, UsdGeom.LinearUnits.millimeters)  # force mm
 
         stage.Save()
 

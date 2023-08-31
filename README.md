@@ -98,7 +98,7 @@ Example of a fixture defined in a MVR file (contains some, but not all propertie
 ```
 
 Some notes on the properties:
-- Matrix is in milimeters (applies to the last part, the translation).
+- Matrix is in millimeters (applies to the last part, the translation).
 - Color is in [CIE 1931 color space](https://en.wikipedia.org/wiki/CIE_1931_color_space) and represent the color of a color gel or similar apparatus and not of the fixture itself.
 
 # Resources

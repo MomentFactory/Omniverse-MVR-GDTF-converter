@@ -64,7 +64,7 @@ class MVRImporter:
 
     def _add_fixture_xform(stage: Usd.Stage, layers: List[Layer]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
-        mvr_scale = 0.001  # MVR dimensions are in milimeters
+        mvr_scale = UsdGeom.LinearUnits.millimeters  # MVR dimensions are in millimeters
         applied_scale: float = USDTools.get_applied_scale(stage, mvr_scale)
 
         for layer in layers:
