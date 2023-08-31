@@ -55,18 +55,16 @@ class USDTools:
         return scale_factor / stage_scale
 
     def apply_scale_xform_op(xform: UsdGeom.Xform, scale: float):
+        scale_value = Gf.Vec3d(scale, scale, scale)
         xform_ordered_ops: List[UsdGeom.XformOp] = xform.GetOrderedXformOps()
         found_op = False
         for xform_op in xform_ordered_ops:
             if xform_op.GetOpType() == UsdGeom.XformOp.TypeScale:
-                current_scale: Gf.Vec3d = xform_op.Get()
-                applied_scale = current_scale * scale
-                xform_op.Set(applied_scale)
+                xform_op.Set(scale_value)
                 found_op = True
 
         if not found_op:
-            forced_scale = Gf.Vec3d(scale, scale, scale)
-            xform.AddScaleOp().Set(forced_scale)
+            xform.AddScaleOp().Set(scale_value)
 
     def np_matrix_from_gdtf(value: str) -> np.matrix:
         # GDTF Matrix is: 4x4, row-major, Right-Handed, Z-up (Distance Unit not specified, but mm implied)
@@ -83,9 +81,9 @@ class USDTools:
 
     def gf_matrix_from_gdtf(np_matrix: np.matrix, scale: float) -> Gf.Matrix4d:
         gf_matrix = Gf.Matrix4d(
-            np_matrix.item((0, 0)), np_matrix.item((0, 1)), np_matrix.item((0, 2)), np_matrix.item((0, 3)) * scale,
-            np_matrix.item((1, 0)), np_matrix.item((1, 1)), np_matrix.item((1, 2)), np_matrix.item((1, 3)) * scale,
-            np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), np_matrix.item((2, 3)) * scale,
+            np_matrix.item((0, 0)), np_matrix.item((0, 1)), np_matrix.item((0, 2)), np_matrix.item((0, 3)),
+            np_matrix.item((1, 0)), np_matrix.item((1, 1)), np_matrix.item((1, 2)), np_matrix.item((1, 3)),
+            np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), np_matrix.item((2, 3)),
             np_matrix.item((3, 0)), np_matrix.item((3, 1)), np_matrix.item((3, 2)), np_matrix.item((3, 3))
         )
 
@@ -95,26 +93,24 @@ class USDTools:
     def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float):
         applied_scale = USDTools.compute_applied_scale(stage)
         axis_matrix = USDTools.get_axis_rotation_matrix()
-
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
         translation, rotation = USDTools.compute_xform_values(position_matrix, applied_scale, axis_matrix)
         rotation += Gf.Vec3d(-90, 0, 0)
+        scale = Gf.Vec3d(radius * 2, radius * 2, 1)
+        USDTools._set_light_xform(light, translation, rotation, scale)
 
+    def add_light_default(stage: Usd.Stage, path: str, height: float, diameter: float):
+        light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
+        translation = Gf.Vec3d(0, -height * 0.5, 0)
+        rotation = Gf.Vec3d(-90, 0, 0)
+        scale = Gf.Vec3d(diameter, diameter, 1)
+        USDTools._set_light_xform(light, translation, rotation, scale)
+
+    def _set_light_xform(light: UsdLux.DiskLight, translation: Gf.Vec3d, rotation: Gf.Vec3d, scale: Gf.Vec3d):
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(translation)
         light.AddRotateXYZOp().Set(rotation)
-        light.AddScaleOp().Set(Gf.Vec3d(radius * 2 * applied_scale, radius * 2 * applied_scale, 1))
-        light.CreateIntensityAttr().Set(60_000)
-        light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
-
-    def add_light_default(stage: Usd.Stage, path: str, height: float, diameter: float):
-        scale = USDTools.get_applied_scale(stage, 1)
-        light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
-
-        light.ClearXformOpOrder()  # Prevent error when overwritting
-        light.AddTranslateOp().Set(Gf.Vec3d(0, -height * 0.5 * scale, 0))
-        light.AddRotateXYZOp().Set(Gf.Vec3d(-90, 0, 0))
-        light.AddScaleOp().Set(Gf.Vec3d(diameter * scale, diameter * scale, 1))
+        light.AddScaleOp().Set(scale)
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
 
