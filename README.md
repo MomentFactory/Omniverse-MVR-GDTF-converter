@@ -14,15 +14,9 @@ This repository contains two different extensions :
 
 # Getting started
 
-- Requires Omniverse Kit >= 104.1
-- Tested in Create 2022.3.3
+- Requires Omniverse Kit >= 105
+- Tested in Create 2023.1.1
 
-## Enable the extension from command line
-
-```
-> link_app.bat --app create
-> app\omni.create.bat --ext-folder exts --enable mf.ov.mvr
-```
 ## From Omniverse exchange
 
 Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
@@ -33,10 +27,10 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 2. Click the `+Import` button and select "External Assets (FBX, OBJ...)
 3. Choose a `MVR` or `GDTF` file and wait for it to import.
 -  MVR import
-   - The import result will be stored in a `📁MVR` folder in the current content browser directory.
-   - if `GDTF` files are referenced, they will be converted to `USD` in the `📁MVR/gdtf` folder.
+   - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+   - if `GDTF` files are referenced, they will be converted to `USD` in a subfolder.
 - GDTF import
-  - The import result will be stored in a `📁GDTF` folder in the current content browser directory.
+  - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
 
 4. To finalize the import, drag the freshly converted `USD` file in your project.
 
