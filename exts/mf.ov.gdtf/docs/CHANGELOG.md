@@ -3,8 +3,8 @@
 ## [0.3.0] - 2023-09-01
 
 ## Added
-- Support for node type Inventory
-- Use Beam node when present for light xform
+- Support for node type "Inventory"
+- Use "Beam" node when present for light xform
 
 ## Fixed
 - Global scale and rotation rework
