@@ -1,5 +1,7 @@
 import numpy as np
+from typing import List
 from unidecode import unidecode
+from urllib.parse import unquote
 
 from pxr import Gf, Tf, Sdf, Usd, UsdGeom
 
@@ -56,7 +58,6 @@ class USDTools:
             np_matrix.item((2, 0)), np_matrix.item((2, 1)), np_matrix.item((2, 2)), 0,
             np_matrix.item((3, 0)) * scale, np_matrix.item((3, 1)) * scale, np_matrix.item((3, 2)) * scale, 1
         )
-
         return gf_matrix
 
     def set_fixture_attribute(prim: Usd.Prim, attribute_name: str, attribute_type: Sdf.ValueTypeNames, attribute_value):
@@ -64,7 +65,32 @@ class USDTools:
 
     def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str):
         xform_ref: UsdGeom.Xform = stage.GetPrimAtPath(stage_path)
-        unescaped_path: str = ref_path_relative.replace("%20", " ")
+        path_unquoted = unquote(ref_path_relative)
         references: Usd.References = xform_ref.GetReferences()
-        references.AddReference(unescaped_path)
+        references.AddReference(path_unquoted)
         stage.Save()
+
+    def copy_gdtf_scale(mvr_stage: Usd.Stage, stage_prim_path: str, relative_path: str):
+        # Copy a reference default prim scale op value to a referencing xform in an other stage
+        curr_root_layer = mvr_stage.GetRootLayer()
+        curr_stage_url: str = curr_root_layer.realPath
+        curr_stage_dir_index: str = curr_stage_url.rindex("/")
+        curr_stage_dir = curr_stage_url[:curr_stage_dir_index]
+
+        mvr_xform_target = UsdGeom.Xform(mvr_stage.GetPrimAtPath(stage_prim_path))
+
+        gdtf_stage_filename: str = relative_path[1:]
+        gdtf_stage_path: str = curr_stage_dir + gdtf_stage_filename
+        gdtf_stage: Usd.Stage = Usd.Stage.Open(gdtf_stage_path)
+        gdtf_default_prim = UsdGeom.Xform(gdtf_stage.GetDefaultPrim())
+
+        stage_scale = UsdGeom.GetStageMetersPerUnit(mvr_stage)
+        scale_factor = 1 / stage_scale
+        scale_value = Gf.Vec3d(scale_factor, scale_factor, scale_factor)
+        xform_ordered_ops: List[UsdGeom.XformOp] = gdtf_default_prim.GetOrderedXformOps()
+        for xform_op in xform_ordered_ops:
+            if xform_op.GetOpType() == UsdGeom.XformOp.TypeScale:
+                scale_value = xform_op.Get()
+
+        mvr_xform_target.AddScaleOp().Set(scale_value)
+        mvr_stage.Save()

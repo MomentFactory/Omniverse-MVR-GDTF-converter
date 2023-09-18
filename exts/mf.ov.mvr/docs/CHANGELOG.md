@@ -1,5 +1,11 @@
 # Changelog
 
+# [0.3.0] - 2023-09-01
+
+## Fixed
+- Global scale rework
+- Fix relative link issue with character escaping
+
 # [0.2.0] - 2023-08-17
 
 ### Added

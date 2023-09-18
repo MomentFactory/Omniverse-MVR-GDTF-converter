@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] - 2023-09-01
+
+## Added
+- Support for node type "Inventory"
+- Use "Beam" node when present for light xform
+
+## Fixed
+- Global scale and rotation rework
+- Fix relative links issue with path and character escaping
+
 ## [0.2.0] - 2023-08-17
 
 ### Fixed

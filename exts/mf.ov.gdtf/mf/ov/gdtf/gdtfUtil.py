@@ -36,14 +36,14 @@ class Model:
     def set_tmpdir_filepath(self, path: Filepath):
         self._tmpdir_filepath = path
 
+    def get_tmpdir_filepath(self) -> Filepath:
+        return self._tmpdir_filepath
+
     def set_converted_from_3ds(self):
         self._converted_from_3ds = True
 
     def get_converted_from_3ds(self):
         return self._converted_from_3ds
-
-    def get_tmpdir_filepath(self) -> Filepath:
-        return self._tmpdir_filepath
 
     def set_converted_filepath(self, path: Filepath):
         self._converted_filepath = path
@@ -58,11 +58,15 @@ class Model:
         return self._width
 
 
-class GeometryAxis:
+class Geometry:
     def __init__(self, node: ET.Element):
         self._name: str = node.attrib["Name"]
         self._model_id: str = get_attrib_if_exists(node, "Model")
-        self._position = node.attrib["Position"]
+        self._position_matrix = node.attrib["Position"]
+        self._tag = node.tag
+
+    def get_tag(self) -> str:
+        return self._tag
 
     def get_name(self) -> str:
         return self._name
@@ -72,8 +76,8 @@ class GeometryAxis:
             return self._model_id
         return self._name
 
-    def get_position(self) -> str:
-        return self._position
+    def get_position_matrix(self) -> str:
+        return self._position_matrix
 
     def set_model(self, model: Model):
         self._model = model
@@ -104,3 +108,18 @@ class GeometryAxis:
 
     def get_xform_parent(self) -> UsdGeom.Xform:
         return self._xform_parent
+
+class Beam:
+    def __init__(self, geometry: Geometry, node: ET.Element):
+        self._radius = float(node.attrib["BeamRadius"])
+        self._position_matrix = geometry.get_position_matrix()
+        self._stage_path = geometry.get_stage_path()
+
+    def get_radius(self) -> float:
+        return self._radius
+
+    def get_position_matrix(self) -> str:
+        return self._position_matrix
+
+    def get_stage_path(self) -> str:
+        return self._stage_path

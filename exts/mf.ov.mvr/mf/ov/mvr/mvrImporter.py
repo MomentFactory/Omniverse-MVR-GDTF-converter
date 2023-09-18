@@ -64,7 +64,7 @@ class MVRImporter:
 
     def _add_fixture_xform(stage: Usd.Stage, layers: List[Layer]):
         rotate_minus90deg_xaxis = Gf.Matrix3d(1, 0, 0, 0, 0, 1, 0, -1, 0)
-        mvr_scale = 0.001  # MVR dimensions are in milimeters
+        mvr_scale = UsdGeom.LinearUnits.millimeters  # MVR dimensions are in millimeters
         applied_scale: float = USDTools.get_applied_scale(stage, mvr_scale)
 
         for layer in layers:
@@ -86,7 +86,8 @@ class MVRImporter:
 
                     xform.ClearXformOpOrder()  # Prevent error when overwritting
                     xform.AddTranslateOp().Set(translation)
-                    xform.AddRotateXYZOp().Set(rotate)
+                    xform.AddRotateYXZOp().Set(rotate)
+                    # Scale Op is added in _add_gdtf_reference
 
                     fixture.apply_attributes_to_prim(xform.GetPrim())
         stage.Save()
@@ -117,3 +118,4 @@ class MVRImporter:
                     relative_path = f"./{spec}.gdtf/{spec}{ext}"
                     stage_path = fixture.get_stage_path()
                     USDTools.add_reference(stage, relative_path, stage_path)
+                    USDTools.copy_gdtf_scale(stage, stage_path, relative_path)

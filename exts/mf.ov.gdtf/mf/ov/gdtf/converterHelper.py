@@ -1,18 +1,21 @@
 import logging
+import shutil
+from urllib.parse import unquote
 
 import omni.kit.window.content_browser
 
 from .filepathUtility import Filepath
 from .gdtfImporter import GDTFImporter
+from .gltfImporter import GLTFImporter
 
 
 class ConverterHelper:
     def _create_import_task(self, absolute_path, export_folder, _):
-        absolute_path = absolute_path.replace("%20", " ")
-        if absolute_path.startswith("file:/"):
-            path = absolute_path[6:]
+        absolute_path_unquoted = unquote(absolute_path)
+        if absolute_path_unquoted.startswith("file:/"):
+            path = absolute_path_unquoted[6:]
         else:
-            path = absolute_path
+            path = absolute_path_unquoted
 
         current_nucleus_dir = omni.kit.window.content_browser.get_content_window().get_current_directory()
 
@@ -35,4 +38,5 @@ class ConverterHelper:
         for i in range(len(absolute_paths)):
             converted_assets[absolute_paths[i]] = self._create_import_task(absolute_paths[i], export_folder,
                                                                            hoops_context)
+        shutil.rmtree(GLTFImporter.TMP_ARCHIVE_EXTRACT_DIR)
         return converted_assets
