@@ -1,12 +1,13 @@
 # MF.OV.MVR and MF.OV.GDTF
 
+This repository contains 2x extensions. 
 Brings support of MVR and GDTF files to Omniverse and USD.
 
-GDTF (General Device Type Format) defines an asset format that collects multiple information about Audiovisual devices. It is currently centered on lighting fixtures.
+GDTF (General Device Type Format) defines an asset format that collects  information about Audiovisual devices. It is currently centered on lighting fixtures and provide accurate digital twins of lighting devices from 100+ manufacturers.
 
-MVR (My Virtual Rig) is a scene description containing GDTF assets, layering them in space, associating them, DMX address them to allow lighting designer to build virtual replicas of their lighting rigs.
+MVR (My Virtual Rig) is a scene format that can describe an complete rig of lights, using GDTF assets at its core while adding capabilities to define groups, layers, DMX address and more to allow lighting designer to build virtual replicas of their lighting rigs and enforce a single file format from show design to previz to operation. 
 
-This repository contains two different extensions :
+This repository contains two separate extensions :
 
 - [MVR extension](./exts/mf.ov.mvr/)
 - [GDTF extension](./exts/mf.ov.gdtf/)
@@ -23,6 +24,8 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
 # Convert MVR or GDTF files
 
+Note: to properly work with MVR files, both extension have to be enabled. 
+
 1. In the content tab, browse to the folder where you want to import your `MVR` or `GDTF` files.
 2. Click the `+Import` button and select "External Assets (FBX, OBJ...)
 3. Choose a `MVR` or `GDTF` file and wait for it to import.
@@ -32,11 +35,21 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 - GDTF import
   - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
 
-4. To finalize the import, drag the freshly converted `USD` file in your project.
+1. To finalize the import, drag the freshly converted `USD` file in your project.
 
-# `MVR.USD` file structure
+# Sample files 
 
-1. Under the Root, you'll find `Scope` representing the different layers of the MVR scene.
+GDTF 
+
+https://gdtf-share.com/share.php?page=home&manu=Robe+Lighting&fix=Robin+Spiider
+
+
+
+# `MVR.USD` USD schema
+
+Note : not every aspect of the MVR specification is currently implemented for USD, as we focused on the ability to retrieve the lighting fixture information. 
+
+1. Under the Root, you'll find `Scope` representing the different `Layers` of the MVR scene.
 2. Inside them you'll find each GDTF Fixture represented by an `Xform` pointing to an USD payload.
 3. `Xform` are named using their names and their uuid to ensure unique naming.
 4.  `Xform` also have custom properties (see Raw USD Properties) using the following convention: `mf:mvr:property`.
@@ -52,7 +65,17 @@ Root/
    └─💠Make_Model_UID2 (Xform with payload)
 ```
 
-# `GDTF.USD` file structure
+# MVR Raw USD Properties
+
+TODO
+
+
+TODO 
+
+
+TODO
+
+# `GDTF.USD` USD Schema
 
 GDTF can have multiple structure type, but here is a typical example for a moving light.
 

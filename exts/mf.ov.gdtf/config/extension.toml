@@ -7,7 +7,7 @@ authors = ["Moment Factory","Frederic Lestage"]
 
 readme  = "docs/README.md"
 changelog = "docs/CHANGELOG.md"
-repository = "https://github.com/MomentFactory/Omniverse-MVR-extension2"
+repository = "https://github.com/MomentFactory/Omniverse-MVR-GDTF-converter"
 
 category = "Rendering"
 keywords = ["MVR", "GDTF","Audiovisual","Lighting","Fixture"]
