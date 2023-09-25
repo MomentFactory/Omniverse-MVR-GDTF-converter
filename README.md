@@ -1,12 +1,13 @@
 # MF.OV.MVR and MF.OV.GDTF
 
+This repository contains 2x extensions.
 Brings support of MVR and GDTF files to Omniverse and USD.
 
-GDTF (General Device Type Format) defines an asset format that collects multiple information about Audiovisual devices. It is currently centered on lighting fixtures.
+GDTF (General Device Type Format) defines an asset format that collects  information about Audiovisual devices. It is currently centered on lighting fixtures and provide accurate digital twins of lighting devices from 100+ manufacturers.
 
-MVR (My Virtual Rig) is a scene description containing GDTF assets, layering them in space, associating them, DMX address them to allow lighting designer to build virtual replicas of their lighting rigs.
+MVR (My Virtual Rig) is a scene format that can describe an complete rig of lights, using GDTF assets at its core while adding capabilities to define groups, layers, DMX address and more to allow lighting designer to build virtual replicas of their lighting rigs and enforce a single file format from show design to previz to operation.
 
-This repository contains two different extensions :
+This repository contains two separate extensions :
 
 - [MVR extension](./exts/mf.ov.mvr/)
 - [GDTF extension](./exts/mf.ov.gdtf/)
@@ -23,20 +24,31 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
 # Convert MVR or GDTF files
 
+Note: to properly work with MVR files, both extension have to be enabled.
+
 1. In the content tab, browse to the folder where you want to import your `MVR` or `GDTF` files.
 2. Click the `+Import` button and select "External Assets (FBX, OBJ...)
 3. Choose a `MVR` or `GDTF` file and wait for it to import.
--  MVR import
-   - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
-   - if `GDTF` files are referenced, they will be converted to `USD` in a subfolder.
-- GDTF import
-  - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+   -  MVR import
+      - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+      - If `GDTF` files are referenced, they will be converted to `USD` in a subfolder.
+   - GDTF import
+      - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+4. To finalize the import, drag the freshly converted `USD` file in your project or open it.
 
-4. To finalize the import, drag the freshly converted `USD` file in your project.
+# Sample files
 
-# `MVR.USD` file structure
+GDTF
 
-1. Under the Root, you'll find `Scope` representing the different layers of the MVR scene.
+https://gdtf-share.com/share.php?page=home&manu=Robe+Lighting&fix=Robin+Spiider
+
+
+
+# `MVR.USD` USD schema
+
+Note : not every aspect of the MVR specification is currently implemented for USD, as we focused on the ability to retrieve the lighting fixture information.
+
+1. Under the Root, you'll find `Scope` representing the different `Layers` of the MVR scene.
 2. Inside them you'll find each GDTF Fixture represented by an `Xform` pointing to an USD payload.
 3. `Xform` are named using their names and their uuid to ensure unique naming.
 4.  `Xform` also have custom properties (see Raw USD Properties) using the following convention: `mf:mvr:property`.
@@ -52,7 +64,31 @@ Root/
    └─💠Make_Model_UID2 (Xform with payload)
 ```
 
-# `GDTF.USD` file structure
+# MVR Raw USD Properties
+
+When importing an MVR files, some properties specific to MVR and not compatible with USD will be imported as raw USD properties of an Xform holding a lighting fixture :
+
+| property               | type                                                                                               |    description                                                                           |
+|---                     |---                                                                                                 |---                                                                                       |
+|`mf:mvr:name`           |[🔗String](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)        | The name of the object.                                                                 |
+|`mf:mvr:uuid`           |[🔗UUID](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)          | The unique identifier of the object.                                                    |
+|`mf:mvr:Classing`       |[🔗UUID](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)          | The class the object belongs to                                                         |
+|`mf:mvr:GDTFMode`       |[🔗String](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)        | The name of the used DMX mode. This has to match the name of a DMXMode in the GDTF file.|
+|`mf:mvr:GDTFSpec`       |[🔗FileName](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)      | The name of the file containing the GDTF information for this light fixture.            |
+|`mf:mvr:CastShadow`     |[🔗Bool](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)          | Wether the fixture casts shadows or not.                                                |
+|`mf:mvr:UnitNumber`     |[🔗Integer](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)       |The unit number of the lighting fixture in a position.                                   |
+|`mf:mvr:Addresses`      |[🔗Adresses](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#node-definition-addresses)| the DMX  address of the fixture.                                                        |
+|`mf:mvr:CustomCommands` |[🔗CustomCommands](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#node-definition-customcommands)|  Custom commands that should be executed on the fixture                      |
+|`mf:mvr:CIEColor`       |[🔗CIE Color](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#user-content-attrtype-ciecolor)| A color assigned to a fixture. If it is not defined, there is no color for the fixture.|
+|`mf:mvr:FixtureTypeId`  |[🔗Integer](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)       | The Fixture Type ID is a value that can be used as a short name of the Fixture Type.    |
+|`mf:mvr:CustomId`       |[🔗Integer](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)       |The Custom ID is a value that can be used as a short name of the Fixture Instance.       |
+
+Example
+
+![Raw USD properties screenshot](img/raw_usd_properties.png)
+
+
+# `GDTF.USD` USD Schema
 
 GDTF can have multiple structure type, but here is a typical example for a moving light.
 
