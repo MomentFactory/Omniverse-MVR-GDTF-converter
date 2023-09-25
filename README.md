@@ -29,13 +29,12 @@ Note: to properly work with MVR files, both extension have to be enabled.
 1. In the content tab, browse to the folder where you want to import your `MVR` or `GDTF` files.
 2. Click the `+Import` button and select "External Assets (FBX, OBJ...)
 3. Choose a `MVR` or `GDTF` file and wait for it to import.
--  MVR import
-   - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
-   - if `GDTF` files are referenced, they will be converted to `USD` in a subfolder.
-- GDTF import
-  - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
-
-1. To finalize the import, drag the freshly converted `USD` file in your project or open it.
+   -  MVR import
+      - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+      - If `GDTF` files are referenced, they will be converted to `USD` in a subfolder.
+   - GDTF import
+      - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
+4. To finalize the import, drag the freshly converted `USD` file in your project or open it.
 
 # Sample files
 
