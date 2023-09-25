@@ -24,11 +24,16 @@ class ConverterHelper:
         if export_folder is not None and export_folder != "":
             output_dir = export_folder
 
+        # Cannot Unzip directly from Nucleus, must download file beforehand
         if file.is_nucleus_path():
-            # TODO: Cannot Unzip directly from omniverse, might have to download the file locally as tmp
-            logger = logging.getLogger(__name__)
-            logger.error("Cannot import directly from Omniverse")
-            return
+            tmp_path = GLTFImporter.TMP_ARCHIVE_EXTRACT_DIR + file.basename
+            result = omni.client.copy(file.fullpath, tmp_path, omni.client.CopyBehavior.OVERWRITE)
+            if result == omni.client.Result.OK:
+                file = Filepath(tmp_path)
+            else:
+                logger = logging.getLogger(__name__)
+                logger.error(f"Could not import {file.fullpath} directly from Omniverse, try downloading the file instead")
+                return
 
         url: str = GDTFImporter.convert(file, output_dir)
         return url
