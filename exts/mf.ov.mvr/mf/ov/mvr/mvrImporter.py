@@ -17,7 +17,7 @@ class MVRImporter:
         # TODO:  change output_ext to bool use_usda
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                output_dir = mvr_output_dir + file.filename + ".mvr/"
+                output_dir = mvr_output_dir + file.filename + "_mvr/"
                 data = archive.read("GeneralSceneDescription.xml")
                 root = ET.fromstring(data)
                 MVRImporter._warn_for_version(root)
@@ -115,7 +115,7 @@ class MVRImporter:
             if layer.fixtures_len() > 0:
                 for fixture in layer.get_fixtures():
                     spec = fixture.get_spec_name()
-                    relative_path = f"./{spec}.gdtf/{spec}{ext}"
+                    relative_path = f"./{spec}_gdtf/{spec}{ext}"
                     stage_path = fixture.get_stage_path()
                     USDTools.add_reference(stage, relative_path, stage_path)
                     USDTools.copy_gdtf_scale(stage, stage_path, relative_path)
