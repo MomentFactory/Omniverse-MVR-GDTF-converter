@@ -84,6 +84,11 @@ When importing an MVR files, some properties specific to MVR and not compatible 
 |`mf:mvr:fixture_type_id`|[🔗Integer](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)       | The Fixture Type ID is a value that can be used as a short name of the Fixture Type.    |
 |`mf:mvr:custom_id`      |[🔗Integer](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)       |The Custom ID is a value that can be used as a short name of the Fixture Instance.       |
 
+Example
+
+![Raw USD properties screenshot](img/raw_usd_properties.png)
+
+
 # `GDTF.USD` USD Schema
 
 GDTF can have multiple structure type, but here is a typical example for a moving light.
