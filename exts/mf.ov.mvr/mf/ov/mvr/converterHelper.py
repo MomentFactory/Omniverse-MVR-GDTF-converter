@@ -1,4 +1,5 @@
 import logging
+import shutil
 import tempfile
 from urllib.parse import unquote
 
@@ -44,4 +45,5 @@ class ConverterHelper:
         for i in range(len(absolute_paths)):
             converted_assets[absolute_paths[i]] = self._create_import_task(absolute_paths[i], export_folder,
                                                                            hoops_context)
+        shutil.rmtree(ConverterHelper.TMP_ARCHIVE_EXTRACT_DIR)
         return converted_assets
