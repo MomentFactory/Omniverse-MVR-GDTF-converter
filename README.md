@@ -22,6 +22,15 @@ This repository contains two separate extensions :
 
 Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
+# Sample files
+
+An [MVR sample file](./exts/mf.ov.mvr/sample/7-fixtures-sample.mvrt/) and a [GDTF sample file](./exts/mf.ov.gdtf/sample/Robe_Lighting@Robin_MMX_Blade@2023-07-25__Beam_revision.gdtf) are provided with this repository. 
+
+Thousands of GDTF files are available on [GDTF-share](https://gdtf-share.com/). 
+
+For example the very last version of the sample file we provide can be downloaded [here](https://gdtf-share.com/share.php?page=home&manu=Robe%20Lighting&fix=Robin%20MMX%20Blade)
+
+
 # Convert MVR or GDTF files
 
 Note: to properly work with MVR files, both extension have to be enabled.
@@ -36,11 +45,7 @@ Note: to properly work with MVR files, both extension have to be enabled.
       - The import result will be stored in a folder with the same name as the imported file in the current content browser directory.
 4. To finalize the import, drag the freshly converted `USD` file in your project or open it.
 
-# Sample files
 
-GDTF
-
-https://gdtf-share.com/share.php?page=home&manu=Robe+Lighting&fix=Robin+Spiider
 
 
 
