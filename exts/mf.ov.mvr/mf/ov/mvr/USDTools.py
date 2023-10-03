@@ -74,8 +74,9 @@ class USDTools:
         # Copy a reference default prim scale op value to a referencing xform in an other stage
         curr_root_layer = mvr_stage.GetRootLayer()
         curr_stage_url: str = curr_root_layer.realPath
-        curr_stage_dir_index: str = curr_stage_url.rindex("/")
-        curr_stage_dir = curr_stage_url[:curr_stage_dir_index]
+        curr_stage_url_formatted: str = curr_stage_url.replace('\\', '/')
+        curr_stage_dir_index: str = curr_stage_url_formatted.rindex("/")
+        curr_stage_dir = curr_stage_url_formatted[:curr_stage_dir_index]
 
         mvr_xform_target = UsdGeom.Xform(mvr_stage.GetPrimAtPath(stage_prim_path))
 

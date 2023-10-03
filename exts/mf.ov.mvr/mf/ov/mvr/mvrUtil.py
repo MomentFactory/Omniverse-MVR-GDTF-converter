@@ -12,8 +12,8 @@ class Fixture:
         self._name = node.attrib["name"]
         self._uuid = node.attrib["uuid"]
         self._matrix = self._get_value_text_if_exists("Matrix")
-        self._GDTFspec = self._get_value_text_if_exists("GDTFSpec")
-        self._GDTFmode = self._get_value_text_if_exists("GDTFMode")
+        self._gdtf_spec = self._get_value_text_if_exists("GDTFSpec")
+        self._gdtf_mode = self._get_value_text_if_exists("GDTFMode")
         self._custom_commands = self._get_custom_commands_values()
         self._classing = self._get_value_text_if_exists("Classing")
         self._addresses = self._get_addresses_values()
@@ -21,7 +21,7 @@ class Fixture:
         self._unit_number = self._get_value_int_if_exists("UnitNumber")
         self._fixture_type_id = self._get_value_int_if_exists("FixtureTypeId")
         self._custom_id = self._get_value_int_if_exists("CustomId")
-        self._color = self._get_color_values()
+        self._cie_color = self._get_color_values()
         self._cast_shadow = self._get_value_bool_if_exists("CastShadow")
 
     def get_unique_name_usd(self) -> str:
@@ -37,9 +37,9 @@ class Fixture:
         return self._stage_path
 
     def get_spec_name(self) -> str:
-        spec_name = self._GDTFspec
-        if self._GDTFspec[-5:] == ".gdtf":
-            spec_name = self._GDTFspec[:-5]
+        spec_name = self._gdtf_spec
+        if self._gdtf_spec[-5:] == ".gdtf":
+            spec_name = self._gdtf_spec[:-5]
         return spec_name
 
     def _get_value_text_if_exists(self, name: str) -> str:
@@ -93,17 +93,17 @@ class Fixture:
     def apply_attributes_to_prim(self, prim: Usd.Prim):
         self._set_attribute_text_if_valid(prim, "name", self._name)
         self._set_attribute_text_if_valid(prim, "uuid", self._uuid)
-        self._set_attribute_text_if_valid(prim, "GDTFSpec", self._GDTFspec)
-        self._set_attribute_text_if_valid(prim, "GDTFMode", self._GDTFmode)
-        self._set_attribute_textarray_if_valid(prim, "custom_commands", self._custom_commands)
-        self._set_attribute_text_if_valid(prim, "classing", self._classing)
-        self._set_attribute_intarray_if_valid(prim, "addresses", self._addresses)
-        self._set_attribute_int_if_valid(prim, "fixture_id", self._fixture_id)
-        self._set_attribute_int_if_valid(prim, "unit_number", self._unit_number)
-        self._set_attribute_int_if_valid(prim, "fixture_type_id", self._fixture_type_id)
-        self._set_attribute_int_if_valid(prim, "custom_id", self._custom_id)
-        self._set_attribute_floatarray_if_valid(prim, "color", self._color)
-        self._set_attribute_bool_if_value(prim, "cast_shadow", self._cast_shadow)
+        self._set_attribute_text_if_valid(prim, "GDTFSpec", self._gdtf_spec)
+        self._set_attribute_text_if_valid(prim, "GDTFMode", self._gdtf_mode)
+        self._set_attribute_textarray_if_valid(prim, "CustomCommands", self._custom_commands)
+        self._set_attribute_text_if_valid(prim, "Classing", self._classing)
+        self._set_attribute_intarray_if_valid(prim, "Addresses", self._addresses)
+        self._set_attribute_int_if_valid(prim, "FixtureID", self._fixture_id)
+        self._set_attribute_int_if_valid(prim, "UnitNumber", self._unit_number)
+        self._set_attribute_int_if_valid(prim, "FixtureTypeId", self._fixture_type_id)
+        self._set_attribute_int_if_valid(prim, "CustomId", self._custom_id)
+        self._set_attribute_floatarray_if_valid(prim, "CIEColor", self._cie_color)
+        self._set_attribute_bool_if_value(prim, "CastShadow", self._cast_shadow)
 
     def _set_attribute_text_if_valid(self, prim: Usd.Prim, name: str, value: str):
         if value is not None:

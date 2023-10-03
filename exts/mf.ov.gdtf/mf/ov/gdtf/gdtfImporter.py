@@ -16,7 +16,7 @@ class GDTFImporter:
     def convert(file: Filepath, output_dir: str, output_ext: str = ".usd") -> str:
         try:
             with ZipFile(file.fullpath, 'r') as archive:
-                gdtf_output_dir = output_dir + file.filename + ".gdtf/"
+                gdtf_output_dir = output_dir + file.filename + "_gdtf/"
                 url: str = GDTFImporter._convert(archive, gdtf_output_dir, file.filename, output_ext)
                 return url
 
@@ -29,7 +29,7 @@ class GDTFImporter:
         spec_name_with_ext = spec_name + ".gdtf"
         if spec_name_with_ext in mvr_archive.namelist():
             gdtf_data = BytesIO(mvr_archive.read(spec_name_with_ext))
-            gdtf_output_dir = output_dir + spec_name_with_ext + "/"
+            gdtf_output_dir = output_dir + spec_name + "_gdtf/"
             with ZipFile(gdtf_data) as gdtf_archive:
                 GDTFImporter._convert(gdtf_archive, gdtf_output_dir, spec_name, output_ext)
                 return True
