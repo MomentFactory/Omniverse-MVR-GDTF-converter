@@ -1,5 +1,5 @@
 [package]
-version = "0.3.0"
+version = "0.4.0"
 
 title = "MF MVR converter"
 description = "Support of MVR (My Virtual Rig) files in USD."

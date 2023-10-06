@@ -1,5 +1,19 @@
 # Changelog
 
+# [0.4.0] - 2023-10-02
+
+# Added
+- Sample file
+
+# Fixed
+- Enabled importing from Omniverse
+- Importing within the same repository as the source file fixed (for filesystem and Omniverse)
+
+# Changed
+- The name of the folder (the one created during importation that contains the files converted to usd) won't include the file extension ("myMVRFile.mvr/" will now be "myMVRFile_mvr/")
+- GDTF attributes populated by MVR now better reflect naming convention of the specs ("fixture_id" becomes "FixtureID")
+- Properly remove the temporary directory created for archive extraction at the end of importation
+
 # [0.3.0] - 2023-09-01
 
 ## Fixed
