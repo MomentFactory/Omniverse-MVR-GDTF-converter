@@ -1,0 +1,99 @@
+# common settings for repo_usd for all USD plug-ins
+[repo_usd]
+usd_root = "${root}/_build/usd-deps/nv-usd/%{config}"
+# usd_root = "${root}/../../USD_INSTALLATIONS/USD_22-11"
+usd_python_root = "${root}/_build/usd-deps/python"
+generate_plugin_buildfiles = true
+plugin_buildfile_format = "cmake"
+generate_root_buildfile = true
+
+
+[repo_usd.plugin.mvrFileFormat]
+plugin_dir = "${root}/src/usd-plugins/fileFormat/mvrFileFormat"
+install_root = "${root}/_install/%{platform}/%{config}/mvrFileFormat"
+include_dir = "include/mvrFileFormat"
+additional_include_dirs = [
+    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb"
+]
+public_headers = [
+    "api.h",
+    "iMvrDataProvider.h",
+    "mvrDataProviderFactory.h"
+]
+private_headers = [
+    "mvrData.cpp",
+    "mvrPluginManager.h",
+    "mvrFileFormat.h",
+    "tinyxml2.h"
+]
+cpp_files = [
+    "mvrData.cpp",
+    "mvrDataProviderFactory.cpp",
+    "iMvrDataProvider.cpp",
+    "mvrPluginManager.cpp",
+    "mvrFileFormat.cpp",
+    "tinyxml2.cpp"
+]
+
+resource_files = [
+    "plugInfo.json"
+]
+
+usd_lib_dependencies = [
+    "arch",
+    "tf",
+    "plug",
+    "vt",
+    "gf",
+    "sdf",
+    "js",
+    "pcp",
+    "usdGeom",
+    "usd",
+    "usdLux"
+]
+
+
+[repo_usd.plugin.gdtfFileFormat]
+plugin_dir = "${root}/src/usd-plugins/fileFormat/gdtfFileFormat"
+install_root = "${root}/_install/%{platform}/%{config}/gdtfFileFormat"
+include_dir = "include/gdtfFileFormat"
+additional_include_dirs = [
+    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb"
+]
+public_headers = [
+    "api.h",
+    "iGdtfDataProvider.h",
+    "gdtfDataProviderFactory.h"
+]
+private_headers = [
+    "gdtfData.cpp",
+    "gdtfPluginManager.h",
+    "gdtfFileFormat.h",
+    "tinyxml2.h"
+]
+cpp_files = [
+    "gdtfData.cpp",
+    "gdtfDataProviderFactory.cpp",
+    "iGdtfDataProvider.cpp",
+    "gdtfPluginManager.cpp",
+    "gdtfFileFormat.cpp",
+    "tinyxml2.cpp"
+]
+
+resource_files = [
+    "plugInfo.json"
+]
+usd_lib_dependencies = [
+    "arch",
+    "tf",
+    "plug",
+    "vt",
+    "gf",
+    "sdf",
+    "js",
+    "pcp",
+    "usdGeom",
+    "usd",
+    "usdLux"
+]
