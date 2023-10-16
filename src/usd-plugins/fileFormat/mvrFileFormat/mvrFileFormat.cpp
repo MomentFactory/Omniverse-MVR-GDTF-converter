@@ -135,23 +135,16 @@ static std::string CleanNameForUSD(const std::string& name)
 	return TfMakeValidIdentifier(cleanedName);
 }
 
-
-
-
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
 	MVR::MVRParser mvrParser;
 
 	auto result = mvrParser.ParseMVRFile(resolvedPath);
 
-
-	
-	
 	// Open the MVR Zip archive and parse the relevent files
 	// 1) GDTF - Open the GDTF Zip archive and handle the models
 	// 2) XML  - Create relevant fixture and layers from the XML file contained
 	// -------------------------------------------------------------------------------
-    
 
     // GeneralSceneDescription.xml
     // ---------------------------------------------
@@ -170,11 +163,9 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 		return false;
 	}
 
-
     // TODO: Valide Version of MVR file > 1.5 in XML
     MVR::FixtureFactory fixtureFactory;
     MVR::FixtureSpecification fixtureSpec = fixtureFactory.CreateFromXML(rootNode);
-
 
     auto fixture = MVR::Fixture(fixtureSpec);
 

@@ -1,11 +1,12 @@
 #pragma once
 
+namespace tinyxml2 {
+
+	class XMLElement;
+
+}
+
 namespace MVR {
-
-	namespace tinyxml2 {
-		class XMLNode;
-
-	}
 
 	struct FixtureSpecification;
 
@@ -15,6 +16,7 @@ namespace MVR {
 		FixtureFactory() = default;
 		~FixtureFactory() = default;
 
-		FixtureSpecification CreateFromXML(tinyxml2::XMLNode* node);
+		FixtureSpecification CreateFromXML(tinyxml2::XMLElement* node);
 	};
+
 }

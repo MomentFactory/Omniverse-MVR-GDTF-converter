@@ -1,11 +1,12 @@
 #pragma once
 
+namespace tinyxml2 {
+
+	class XMLElement;
+
+}
+
 namespace MVR {
-
-	namespace tinyxml2 {
-		class XMLElement;
-
-	}
 
 	class LayerSpecification;
 
@@ -17,4 +18,5 @@ namespace MVR {
 
 		LayerSpecification CreateSpecificationFromXML(tinyxml2::XMLElement* element);
 	};
+
 }

@@ -101,10 +101,11 @@ namespace MVR {
 			for (auto* layer = root->FirstChildElement("Layer"); layer; layer = layer->NextSiblingElement()) 
 			{
 				// Create layer
-
 				LayerFactory layerFactory;
+
 			}
 		}
+
 		std::cout << "Found XML file: " << file.name << std::endl;
 	}
 
