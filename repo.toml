@@ -24,7 +24,11 @@ private_headers = [
     "mvrData.cpp",
     "mvrPluginManager.h",
     "mvrFileFormat.h",
-    "tinyxml2.h"
+    "tinyxml2.h",
+    "Fixture.h",
+    "FixtureFactory.h",
+    "LayerFactory.h",
+    "MVRParser.h",
 ]
 cpp_files = [
     "mvrData.cpp",
@@ -32,7 +36,12 @@ cpp_files = [
     "iMvrDataProvider.cpp",
     "mvrPluginManager.cpp",
     "mvrFileFormat.cpp",
-    "tinyxml2.cpp"
+    "Fixture.cpp",
+    "FixtureFactory.cpp",
+    "LayerFactory.cpp",
+    "MVRParser.cpp",
+    "tinyxml2.cpp",
+    "zip_file.hpp",
 ]
 
 resource_files = [
