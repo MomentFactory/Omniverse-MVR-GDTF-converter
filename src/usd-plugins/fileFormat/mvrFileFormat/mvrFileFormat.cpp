@@ -138,6 +138,8 @@ static std::string CleanNameForUSD(const std::string& name)
 
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
+    return true;
+
 	MVR::MVRParser mvrParser;
 	auto result = mvrParser.ParseMVRFile(resolvedPath);
 

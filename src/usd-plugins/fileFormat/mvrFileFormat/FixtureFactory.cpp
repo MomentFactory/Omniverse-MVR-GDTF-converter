@@ -15,20 +15,25 @@ namespace MVR {
 	template<typename T>
 	T GetAttribute(tinyxml2::XMLElement* element, const std::string& name)
 	{
-		if constexpr (std::is_same_v<std::string, T>)
-		{
-			return element->FindAttribute(name) ? std::string(element->FindAttribute(name)->Value()) : "";
-		}
-		else if constexpr (std::is_same_v<uint32_t, T>)
-		{
-			return element->FindAttribute(name) ? element->FindAttribute(name)->IntValue() : 0;
-		}
-		else if constexpr (std::is_same_v<bool, T>)
-		{
-			return element->FindAttribute(name) ? element->FindAttribute(name)->BoolValue() : false;
-		}
-
 		static_assert(true && "Attribute type not implemented.");
+	}
+
+	template<>
+	std::string GetAttribute<std::string>(tinyxml2::XMLElement* element, const std::string& name)
+	{
+		return element->FindAttribute(name.c_str()) ? std::string(element->FindAttribute(name.c_str())->Value()) : std::string();
+	}
+
+	template<>
+	uint32_t GetAttribute<uint32_t>(tinyxml2::XMLElement* element, const std::string& name)
+	{
+		return element->FindAttribute(name.c_str()) ? element->FindAttribute(name.c_str())->IntValue() : 0;
+	}
+
+	template<>
+	bool GetAttribute<bool>(tinyxml2::XMLElement* element, const std::string& name)
+	{
+		return element->FindAttribute(name.c_str()) ? element->FindAttribute(name.c_str())->BoolValue() : false;
 	}
 
 	FixtureSpecification FixtureFactory::CreateFromXML(tinyxml2::XMLElement* node)

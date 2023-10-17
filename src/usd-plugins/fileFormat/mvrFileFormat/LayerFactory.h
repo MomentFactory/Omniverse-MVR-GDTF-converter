@@ -1,14 +1,12 @@
 #pragma once
 
 namespace tinyxml2 {
-
 	class XMLElement;
-
 }
 
 namespace MVR {
 
-	class LayerSpecification;
+	struct LayerSpecification;
 
 	class LayerFactory
 	{

@@ -1,39 +1,42 @@
+#include <LayerFactory.h>
 #include "MVRParser.h"
 
-#include "zip_file.hpp"
+#include "tinyxml2.h"
 
+#include "zip_file.hpp"
 using ZipFile = miniz_cpp::zip_file;
 using ZipInfo = miniz_cpp::zip_info;
 using ZipInfoList = std::vector<ZipInfo>;
 
-#include "tinyxml2.h"
-
 #include <sstream>
 #include <fstream>
-#include <LayerFactory.h>
+
 
 namespace MVR {
 
-	std::vector<Layer> MVRParser::ParseMVRFile(const std::string& path)
+	std::vector<LayerSpecification> MVRParser::ParseMVRFile(const std::string& path)
 	{
 		if (!FileExists(path))
 		{
 			m_Errors.push("Failed to parse MVR file: file doesn't exists - " + path);
-			return;
+			return {};
 		}
 
 		// We open the .mvr archive and parse the file tree and handle files
 		// by their file extension. XML, gltf, 3ds.
 		// ---------------------------------------------------------------------------
-		auto mvrArchive = ZipFile(path);
-		HandleZipFile(mvrArchive);
+		auto filePath = std::string(path);
+		auto zipFile = std::make_shared<ZipFile>(filePath);
+		HandleZipFile(zipFile);
+
+		return m_Layers;
 	}
 
-	void MVRParser::HandleZipFile(ZipFile& zipFile)
+	void MVRParser::HandleZipFile(std::shared_ptr<ZipFile> zipFile)
 	{
-		for (const ZipInfo& info : zipFile.infolist())
+		for (const ZipInfo& info : zipFile->infolist())
 		{
-			const std::string& fileContent = zipFile.read(info);
+			const std::string& fileContent = zipFile->read(info);
 
 			File file = { info.filename, fileContent };
 
@@ -101,8 +104,8 @@ namespace MVR {
 
 			std::vector<LayerSpecification> layers;
 			auto scene = root->FirstChildElement("Scene");
-			auto layers = scene->FirstChildElement("Layers");
-			for (auto* layer = root->FirstChildElement("Layer"); layer; layer = layer->NextSiblingElement()) 
+			auto layersXml = scene->FirstChildElement("Layers");
+			for (auto* layer = layersXml->FirstChildElement("Layer"); layer; layer = layer->NextSiblingElement())
 			{
 				layers.push_back(layerFactory.CreateSpecificationFromXML(layer));
 			}

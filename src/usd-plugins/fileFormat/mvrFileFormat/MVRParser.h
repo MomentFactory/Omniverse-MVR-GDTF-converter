@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Fixture.h"
+
 #include <vector>
 #include <stack>
 #include <string>
+#include <memory>
 
 namespace miniz_cpp {
 
@@ -13,10 +16,6 @@ using ZipFile = miniz_cpp::zip_file;
 
 namespace MVR {
 
-	class Layer;
-	class Fixture;
-	class LayerSpecification;
-	
 	enum class FileType
 	{
 		GDTF,
@@ -37,7 +36,7 @@ namespace MVR {
 		MVRParser() = default;
 		~MVRParser() = default;
 
-		std::vector<Layer> ParseMVRFile(const std::string& path);
+		std::vector<LayerSpecification> ParseMVRFile(const std::string& path);
 
 		inline const bool HasError() const { return m_Errors.size() > 1; }
 		const std::string PopError() 
@@ -59,7 +58,7 @@ namespace MVR {
 		std::vector<LayerSpecification> m_Layers;
 
 		// File handling
-		void HandleZipFile(ZipFile& zipFile);
+		void HandleZipFile(std::shared_ptr<ZipFile> zipFile);
 		void HandleXML(const File& fileName);
 		void HandleModel(const File& fileName);
 		void HandleGDTF(const File& fileName);
