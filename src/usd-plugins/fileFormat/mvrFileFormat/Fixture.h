@@ -13,12 +13,12 @@ namespace MVR {
 		std::string GDTFMode;
 		std::vector<std::string> CustomCommands;
 		std::string Classing;
-		std::string Addresses;
-		std::string FixtureID;
-		std::string UnitNumber;
-		std::string FixtureTypeID;
-		std::string CustomId;
-		std::string CieColor;
+		std::vector<std::string> Addresses;
+		uint32_t FixtureID;
+		uint32_t UnitNumber;
+		uint32_t FixtureTypeID;
+		uint32_t CustomId;
+		std::vector<float> CieColor;
 		bool CastShadows;
 	};
 
@@ -35,14 +35,14 @@ namespace MVR {
 		std::string m_Matrix;
 		std::string m_GDTFSpec;
 		std::string m_GDTFMode;
-		std::string m_CustomCommands;
+		std::vector<std::string> m_CustomCommands;
 		std::string m_Classing;
-		std::string m_Addresses;
-		std::string m_FixtureID;
-		std::string m_UnitNumber;
-		std::string m_FixtureTypeID;
-		std::string m_CustomId;
-		std::string m_CieColor;
+		std::vector<std::string> m_Addresses;
+		uint32_t m_FixtureID;
+		uint32_t m_UnitNumber;
+		uint32_t m_FixtureTypeID;
+		uint32_t m_CustomId;
+		std::vector<float> m_CieColor;
 		bool m_CastShadows;
 	};
 
@@ -51,7 +51,7 @@ namespace MVR {
 		std::string name;
 		std::string uuid;
 
-		std::vector<FixtureSpecification> layers;
+		std::vector<FixtureSpecification> fixtures;
 	};
 
 	class Layer

@@ -18,7 +18,7 @@ namespace MVR {
 	{
 		if (!FileExists(path))
 		{
-			// TODO: Print exception, TF_ERROR?
+			m_Errors.push("Failed to parse MVR file: file doesn't exists - " + path);
 			return;
 		}
 
@@ -75,7 +75,8 @@ namespace MVR {
 			tinyxml2::XMLDocument doc;
 			if (doc.Parse(file.content.c_str()) != tinyxml2::XML_SUCCESS)
 			{
-				// Report error.
+				// TODO: Warn message.
+				m_Errors.push("Failed to parse XML file: " + file.name);
 				return;
 			}
 
@@ -91,19 +92,22 @@ namespace MVR {
 				std::string warnMsg = "This extension is tested with mvr v1.5, this file version is"; 
 				warnMsg += std::to_string(major) + "." + std::to_string(minor);
 
-				// TODO: Warn message.
+				m_Errors.push(warnMsg);
 			}
 
 			// Parse Scene in XML
 			// -------------------------------
+			LayerFactory layerFactory;
+
+			std::vector<LayerSpecification> layers;
 			auto scene = root->FirstChildElement("Scene");
 			auto layers = scene->FirstChildElement("Layers");
 			for (auto* layer = root->FirstChildElement("Layer"); layer; layer = layer->NextSiblingElement()) 
 			{
-				// Create layer
-				LayerFactory layerFactory;
-
+				layers.push_back(layerFactory.CreateSpecificationFromXML(layer));
 			}
+
+			m_Layers = std::move(layers);
 		}
 
 		std::cout << "Found XML file: " << file.name << std::endl;

@@ -46,6 +46,7 @@
 
 #include <FixtureFactory.h>
 #include "Fixture.h"
+#include <LayerFactory.h>
 
 // ZIP
 
@@ -138,45 +139,13 @@ static std::string CleanNameForUSD(const std::string& name)
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
 	MVR::MVRParser mvrParser;
-
 	auto result = mvrParser.ParseMVRFile(resolvedPath);
 
-	// Open the MVR Zip archive and parse the relevent files
-	// 1) GDTF - Open the GDTF Zip archive and handle the models
-	// 2) XML  - Create relevant fixture and layers from the XML file contained
-	// -------------------------------------------------------------------------------
-
-    // GeneralSceneDescription.xml
-    // ---------------------------------------------
-	tinyxml2::XMLDocument doc;
-	const tinyxml2::XMLError xmlReadSuccess = doc.Parse(resolvedPath.c_str());
-	if (xmlReadSuccess != 0)
-	{
-		TF_CODING_ERROR("Failed to load xml file: " + resolvedPath);
-		return false;
-	}
-
-	tinyxml2::XMLElement* rootNode = doc.RootElement();
-	if (rootNode == nullptr)
-	{
-		TF_CODING_ERROR("XML Root node is null: " + resolvedPath);
-		return false;
-	}
-
-    // TODO: Valide Version of MVR file > 1.5 in XML
-    MVR::FixtureFactory fixtureFactory;
-    MVR::FixtureSpecification fixtureSpec = fixtureFactory.CreateFromXML(rootNode);
-
-    auto fixture = MVR::Fixture(fixtureSpec);
-
-    MVR::Layer mvrLayer;
-    mvrLayer.PushFixture(fixture);
-
-    // TODO: Parse Scene in XML
-    // TODO: Parse Layers
-    // TODO: Parse fixtures
-    
-
+    while (mvrParser.HasError())
+    {
+        TF_CODING_ERROR(mvrParser.PopError());
+        return false;
+    }
 
     // Create USD Stage
     // -----------------------------------
