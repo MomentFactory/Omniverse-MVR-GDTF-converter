@@ -1,7 +1,6 @@
 # common settings for repo_usd for all USD plug-ins
 [repo_usd]
 usd_root = "${root}/_build/usd-deps/nv-usd/%{config}"
-# usd_root = "${root}/../../USD_INSTALLATIONS/USD_22-11"
 usd_python_root = "${root}/_build/usd-deps/python"
 generate_plugin_buildfiles = true
 plugin_buildfile_format = "cmake"
@@ -16,75 +15,30 @@ additional_include_dirs = [
     "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb"
 ]
 public_headers = [
-    "api.h",
+    "api.h"
 ]
 private_headers = [
     "mvrFileFormat.h",
-    "tinyxml2.h",
-    "Fixture.h",
-    "FixtureFactory.h",
-    "LayerFactory.h",
-    "MVRParser.h",
+    "mvrParser/tinyxml2.h",
+    "mvrParser/Fixture.h",
+    "mvrParser/FixtureFactory.h",
+    "mvrParser/LayerFactory.h",
+    "mvrParser/MVRParser.h",
 ]
 cpp_files = [
     "mvrFileFormat.cpp",
-    "Fixture.cpp",
-    "FixtureFactory.cpp",
-    "LayerFactory.cpp",
-    "MVRParser.cpp",
-    "tinyxml2.cpp",
-    "zip_file.hpp",
+    "mvrParser/Fixture.cpp",
+    "mvrParser/FixtureFactory.cpp",
+    "mvrParser/LayerFactory.cpp",
+    "mvrParser/MVRParser.cpp",
+    "mvrParser/tinyxml2.cpp",
+    "mvrParser/zip_file.hpp",
 ]
 
 resource_files = [
     "plugInfo.json"
 ]
 
-usd_lib_dependencies = [
-    "arch",
-    "tf",
-    "plug",
-    "vt",
-    "gf",
-    "sdf",
-    "js",
-    "pcp",
-    "usdGeom",
-    "usd",
-    "usdLux"
-]
-
-
-[repo_usd.plugin.gdtfFileFormat]
-plugin_dir = "${root}/src/usd-plugins/fileFormat/gdtfFileFormat"
-install_root = "${root}/_install/%{platform}/%{config}/gdtfFileFormat"
-include_dir = "include/gdtfFileFormat"
-additional_include_dirs = [
-    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb"
-]
-public_headers = [
-    "api.h",
-    "iGdtfDataProvider.h",
-    "gdtfDataProviderFactory.h"
-]
-private_headers = [
-    "gdtfData.cpp",
-    "gdtfPluginManager.h",
-    "gdtfFileFormat.h",
-    "tinyxml2.h"
-]
-cpp_files = [
-    "gdtfData.cpp",
-    "gdtfDataProviderFactory.cpp",
-    "iGdtfDataProvider.cpp",
-    "gdtfPluginManager.cpp",
-    "gdtfFileFormat.cpp",
-    "tinyxml2.cpp"
-]
-
-resource_files = [
-    "plugInfo.json"
-]
 usd_lib_dependencies = [
     "arch",
     "tf",

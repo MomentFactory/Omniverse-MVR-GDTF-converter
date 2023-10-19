@@ -3,7 +3,6 @@
 
 #include "Fixture.h"
 
-#include "tinyxml2.h"
 
 namespace MVR {
 

@@ -22,8 +22,6 @@
 #include <pxr/base/tf/token.h>
 #include <pxr/usd/sdf/fileFormat.h>
 #include <pxr/usd/sdf/layer.h>
-#include <pxr/usd/pcp/dynamicFileFormatInterface.h>
-#include <pxr/usd/pcp/dynamicFileFormatContext.h>
 
 #include "api.h"
 
@@ -36,7 +34,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 /// Actual acquisition of the external data is done via a set
 /// of plug-ins to various back-end external data systems.
 ///
-class MVR_API MvrFileFormat : public SdfFileFormat, public PcpDynamicFileFormatInterface
+class MVR_API MvrFileFormat : public SdfFileFormat
 {
 public:
 	// SdfFileFormat overrides
@@ -44,10 +42,6 @@ public:
 	bool Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const override;
 	bool WriteToString(const SdfLayer& layer, std::string* str, const std::string& comment = std::string()) const override;
 	bool WriteToStream(const SdfSpecHandle& spec, std::ostream& out, size_t indent) const override;
-
-	// PcpDynamicFileFormatInterface overrides
-	void ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const override;
-	bool CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const override;
 
 protected:
 

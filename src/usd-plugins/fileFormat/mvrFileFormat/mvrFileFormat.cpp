@@ -24,29 +24,6 @@
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usd/usdaFileFormat.h>
 
-#include <pxr/usd/usdGeom/mesh.h>
-#include <pxr/usd/usdGeom/scope.h>
-#include <pxr/usd/usdGeom/camera.h>
-#include <pxr/usd/usdGeom/cube.h>
-#include <pxr/usd/usdGeom/xformable.h>
-#include <pxr/usd/usdGeom/xform.h>
-
-#include <pxr/usd/usdLux/rectLight.h>
-
-#include <pxr/base/gf/matrix3f.h>
-#include <pxr/base/gf/vec3f.h>
-
-#include <fstream>
-#include <cmath>
-
-// Parsing Utilities
-
-//#include "MVRParser.h"
-//
-//#include <FixtureFactory.h>
-//#include "Fixture.h"
-//#include <LayerFactory.h>
-
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -102,17 +79,6 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
     //
     //// Create USD Stage
     //// -----------------------------------
-	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
-	UsdStageRefPtr stage = UsdStage::Open(newLayer);
-    //
-	const auto& xformPath = SdfPath("/mvr_payload");
-	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
-	stage->SetDefaultPrim(defaultPrim.GetPrim());
-    //
-	//// TODO: Create usd scene.
-	//
-    //// Copy contents into output layer.
-    layer->TransferContent(newLayer);
 
 	return true;
 }
@@ -127,16 +93,6 @@ bool MvrFileFormat::WriteToStream(const SdfSpecHandle& spec, std::ostream& out, 
 {
 	// this POC doesn't support writing
 	return false;
-}
-
-void MvrFileFormat::ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const
-{
-
-}
-
-bool MvrFileFormat::CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const
-{
-    return true;
 }
 
 // these macros emit methods defined in the Pixar namespace

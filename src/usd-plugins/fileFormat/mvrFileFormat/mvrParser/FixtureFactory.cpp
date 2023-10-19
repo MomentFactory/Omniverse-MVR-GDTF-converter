@@ -1,8 +1,6 @@
 #include "FixtureFactory.h"
 #include "Fixture.h"
 
-#include <tinyxml2.h>
-
 #define GetAttribAsString(name) std::string(node->FindAttribute(name)->Value());
 #define TryGetAttribAsString(name) node->FindAttribute(name) ? std::string(node->FindAttribute(name)->Value()) : "";
 
