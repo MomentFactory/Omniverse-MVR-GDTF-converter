@@ -1,28 +1,20 @@
 {
-    "Plugins": [
+  "Plugins": [
       {
         "Info": {
-          "SdfMetadata": {
-            "Usd_Triangle_SideLength": {
-                "type": "double",
-                "displayGroup": "Core",
-                "appliesTo": ["prims"],
-                "documentation:": "Length of the triangle side."
-            }
-        },
-        "Types": {
-            "MvrFileFormat": {
-              "bases": [
-                "SdfFileFormat"
-              ],
-              "displayName": "MVR Dynamic File Format",
-              "extensions": [
-                "xml"
-              ],
-              "formatId": "mvrFileFormat",
-              "primary": true,
-              "target": "usd"
-            }
+          "Types": {
+              "MvrFileFormat": {
+                "bases": [
+                  "SdfFileFormat"
+                ],
+                "displayName": "MVR Dynamic File Format",
+                "extensions": [
+                  "mvr"
+                ],
+                "formatId": "mvrFileFormat",
+                "primary": true,
+                "target": "usd"
+              }
           }
         },
         "LibraryPath": "@PLUG_INFO_LIBRARY_PATH@",
@@ -30,6 +22,6 @@
         "ResourcePath": "@PLUG_INFO_RESOURCE_PATH@",
         "Root": "@PLUG_INFO_ROOT@",
         "Type": "library"
-      }
-    ]
+    }
+  ]
 }

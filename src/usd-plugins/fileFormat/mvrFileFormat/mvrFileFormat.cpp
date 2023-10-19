@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "mvrFileFormat.h"
-#include "tinyxml2.h"
 
 #include <pxr/pxr.h>
 
@@ -42,14 +41,11 @@
 
 // Parsing Utilities
 
-#include "MVRParser.h"
-
-#include <FixtureFactory.h>
-#include "Fixture.h"
-#include <LayerFactory.h>
-
-// ZIP
-
+//#include "MVRParser.h"
+//
+//#include <FixtureFactory.h>
+//#include "Fixture.h"
+//#include <LayerFactory.h>
 
 
 PXR_NAMESPACE_OPEN_SCOPE
@@ -140,28 +136,28 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 {
     return true;
 
-	MVR::MVRParser mvrParser;
-	auto result = mvrParser.ParseMVRFile(resolvedPath);
-
-    while (mvrParser.HasError())
-    {
-        TF_CODING_ERROR(mvrParser.PopError());
-        return false;
-    }
-
-    // Create USD Stage
-    // -----------------------------------
-	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
-	UsdStageRefPtr stage = UsdStage::Open(newLayer);
-
-	const auto& xformPath = SdfPath("/mvr_payload");
-	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
-	stage->SetDefaultPrim(defaultPrim.GetPrim());
-
-	// TODO: Create usd scene.
-	
-    // Copy contents into output layer.
-    layer->TransferContent(newLayer);
+	//MVR::MVRParser mvrParser;
+	//auto result = mvrParser.ParseMVRFile(resolvedPath);
+    //
+    //while (mvrParser.HasError())
+    //{
+    //    TF_CODING_ERROR(mvrParser.PopError());
+    //    return false;
+    //}
+    //
+    //// Create USD Stage
+    //// -----------------------------------
+	//SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
+	//UsdStageRefPtr stage = UsdStage::Open(newLayer);
+    //
+	//const auto& xformPath = SdfPath("/mvr_payload");
+	//auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
+	//stage->SetDefaultPrim(defaultPrim.GetPrim());
+    //
+	//// TODO: Create usd scene.
+	//
+    //// Copy contents into output layer.
+    //layer->TransferContent(newLayer);
 
 	return true;
 }
@@ -222,7 +218,7 @@ TF_DEFINE_PUBLIC_TOKENS(
 	((Id, "mvrFileFormat"))
 	((Version, "1.0"))
 	((Target, "usd"))
-	((Extension, "xml"))
+	((Extension, "mvr"))
 	((SideLength, "Usd_Triangle_SideLength"))
 );
 
