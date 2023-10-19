@@ -1,8 +1,6 @@
 #pragma once
 
-namespace tinyxml2 {
-	class XMLElement;
-}
+#include "tinyxml2.h"
 
 namespace MVR {
 

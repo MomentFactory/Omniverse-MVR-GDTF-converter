@@ -62,54 +62,6 @@ MvrFileFormat::~MvrFileFormat()
 {
 }
 
-// Exemple of arguments passed to payload
-static const double defaultSideLengthValue = 1.0;
-
-static double _ExtractSideLengthFromContext(const PcpDynamicFileFormatContext& context)
-{
-    // Default sideLength.
-    double sideLength = defaultSideLengthValue;
-
-    VtValue value;
-    if (!context.ComposeValue(MvrFileFormatTokens->SideLength,
-                              &value) ||
-        value.IsEmpty()) {
-        return sideLength;
-    }
-
-    if (!value.IsHolding<double>()) {
-       
-        return sideLength;
-    }
-
-    return value.UncheckedGet<double>();
-}
-
-static double
-_ExtractSideLengthFromArgs(const SdfFileFormat::FileFormatArguments& args)
-{
-    // Default sideLength.
-    double sideLength = defaultSideLengthValue;
-
-    // Find "sideLength" file format argument.
-    auto it = args.find(MvrFileFormatTokens->SideLength);
-    if (it == args.end()) {
-        return sideLength;
-    }
-
-    // Try to convert the string value to the actual output value type.
-    double extractVal;
-    bool success = true;
-    extractVal = TfUnstringify<double>(it->second, &success);
-    if (!success) {
-        
-        return sideLength;
-    }
-
-    sideLength = extractVal;
-    return sideLength;
-}
-
 bool MvrFileFormat::CanRead(const std::string& filePath) const
 {
 	return true;
@@ -134,8 +86,11 @@ static std::string CleanNameForUSD(const std::string& name)
 
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
-    return true;
-
+    PXR_NAMESPACE_USING_DIRECTIVE
+	if (!TF_VERIFY(layer))
+	{
+		return false;
+	}
 	//MVR::MVRParser mvrParser;
 	//auto result = mvrParser.ParseMVRFile(resolvedPath);
     //
@@ -147,17 +102,17 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
     //
     //// Create USD Stage
     //// -----------------------------------
-	//SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
-	//UsdStageRefPtr stage = UsdStage::Open(newLayer);
+	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
+	UsdStageRefPtr stage = UsdStage::Open(newLayer);
     //
-	//const auto& xformPath = SdfPath("/mvr_payload");
-	//auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
-	//stage->SetDefaultPrim(defaultPrim.GetPrim());
+	const auto& xformPath = SdfPath("/mvr_payload");
+	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
+	stage->SetDefaultPrim(defaultPrim.GetPrim());
     //
 	//// TODO: Create usd scene.
 	//
     //// Copy contents into output layer.
-    //layer->TransferContent(newLayer);
+    layer->TransferContent(newLayer);
 
 	return true;
 }
@@ -174,42 +129,16 @@ bool MvrFileFormat::WriteToStream(const SdfSpecHandle& spec, std::ostream& out, 
 	return false;
 }
 
-/*
 void MvrFileFormat::ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const
 {
-	 // Default sideLength.
-    double sideLength = 1.0;
 
-    VtValue value;
-    if (!context.ComposeValue(MvrFileFormatTokens->SideLength,
-                              &value) ||
-        value.IsEmpty()) {
-
-    }
-
-    if (!value.IsHolding<double>()) {
-        // error;
-    }
-
-    double length;
-
-    (*args)[MvrFileFormatTokens->SideLength] = TfStringify(sideLength);
 }
 
 bool MvrFileFormat::CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const
 {
-	// Check if the "sideLength" argument changed.
-    double oldLength = oldValue.IsHolding<double>()
-                           ? oldValue.UncheckedGet<double>()
-                           : 1.0;
-    double newLength = newValue.IsHolding<double>()
-                           ? newValue.UncheckedGet<double>()
-                           : 1.0;
-
-    return oldLength != newLength;
-
+    return true;
 }
-*/
+
 // these macros emit methods defined in the Pixar namespace
 // but not properly scoped, so we have to use the namespace
 // locally here
@@ -219,7 +148,6 @@ TF_DEFINE_PUBLIC_TOKENS(
 	((Version, "1.0"))
 	((Target, "usd"))
 	((Extension, "mvr"))
-	((SideLength, "Usd_Triangle_SideLength"))
 );
 
 TF_REGISTRY_FUNCTION(TfType)

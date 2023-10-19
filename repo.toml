@@ -17,12 +17,8 @@ additional_include_dirs = [
 ]
 public_headers = [
     "api.h",
-    "iMvrDataProvider.h",
-    "mvrDataProviderFactory.h"
 ]
 private_headers = [
-    "mvrData.cpp",
-    "mvrPluginManager.h",
     "mvrFileFormat.h",
     "tinyxml2.h",
     "Fixture.h",
@@ -31,10 +27,6 @@ private_headers = [
     "MVRParser.h",
 ]
 cpp_files = [
-    "mvrData.cpp",
-    "mvrDataProviderFactory.cpp",
-    "iMvrDataProvider.cpp",
-    "mvrPluginManager.cpp",
     "mvrFileFormat.cpp",
     "Fixture.cpp",
     "FixtureFactory.cpp",

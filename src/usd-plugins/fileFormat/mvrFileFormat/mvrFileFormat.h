@@ -36,7 +36,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 /// Actual acquisition of the external data is done via a set
 /// of plug-ins to various back-end external data systems.
 ///
-class MVR_API MvrFileFormat : public SdfFileFormat
+class MVR_API MvrFileFormat : public SdfFileFormat, public PcpDynamicFileFormatInterface
 {
 public:
 	// SdfFileFormat overrides
@@ -46,8 +46,8 @@ public:
 	bool WriteToStream(const SdfSpecHandle& spec, std::ostream& out, size_t indent) const override;
 
 	// PcpDynamicFileFormatInterface overrides
-	//void ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const override;
-	//bool CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const override;
+	void ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const override;
+	bool CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const override;
 
 protected:
 
@@ -63,7 +63,6 @@ TF_DECLARE_PUBLIC_TOKENS(
 	((Version, "1.0")) 
 	((Target, "usd")) 
 	((Extension, "mvr"))
-	((SideLength, "Usd_Triangle_SideLength"))
 	);
 
 TF_DECLARE_WEAK_AND_REF_PTRS(MvrFileFormat);
