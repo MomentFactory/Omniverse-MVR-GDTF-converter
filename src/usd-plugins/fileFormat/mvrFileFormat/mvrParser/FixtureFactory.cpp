@@ -34,6 +34,14 @@ namespace MVR {
 		return element->FindAttribute(name.c_str()) ? element->FindAttribute(name.c_str())->BoolValue() : false;
 	}
 
+	template<>
+	MVRMatrix GetAttribute<MVRMatrix>(tinyxml2::XMLElement* element, const std::string& name)
+	{
+		MVRMatrix result;
+		result[9][2] = 2;
+		return MVRMatrix();
+	}
+
 	FixtureSpecification FixtureFactory::CreateFromXML(tinyxml2::XMLElement* node)
 	{
 		FixtureSpecification spec;

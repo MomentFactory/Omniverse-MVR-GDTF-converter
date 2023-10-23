@@ -57,6 +57,23 @@ bool MvrFileFormat::CanRead(const std::string& filePath) const
 	return true;
 }
 
+static std::string CleanNameForUSD(const std::string& name)
+{
+	std::string cleanedName = name;
+	if(cleanedName.size() == 0)
+	{
+		return "Default";
+	}
+
+	if(cleanedName.size() == 1 && !TfIsValidIdentifier(cleanedName))
+	{
+		// If we have an index as a name, we only need to add _ beforehand.
+		return CleanNameForUSD("_" + cleanedName);
+	}
+
+	return TfMakeValidIdentifier(cleanedName);
+}
+
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
 	// these macros emit methods defined in the Pixar namespace
@@ -70,24 +87,51 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 		return false;
 	}
 
+	// Parse MVR file
+	// ---------------------
 	using namespace MVR;
 	auto parser = MVRParser();
 	auto layers = parser.ParseMVRFile(resolvedPath);
-	for(auto& layer : layers)
-	{
-		std::cout << layer.name << std::endl;
-	}
-	
+
+
+	// Create USD Schema
+	// ------------------------
 	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
 	UsdStageRefPtr stage = UsdStage::Open(newLayer);
-
-	const auto& xformPath = SdfPath("/mvr_payload");
+	auto xformPath = SdfPath("/mvr_payload");
 	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
 	stage->SetDefaultPrim(defaultPrim.GetPrim());
-    //
-	//// TODO: Create usd scene.
-	//
-    //// Copy contents into output layer.
+
+	for(const auto& layer : layers)
+	{
+		const std::string cleanName = CleanNameForUSD(layer.name);
+		std::cout << "Clean layer Name: " << cleanName << std::endl;
+
+		const auto& layerPath = xformPath.AppendChild(TfToken(CleanNameForUSD(layer.name)));
+		auto layerUsd = UsdGeomScope::Define(stage, layerPath);
+
+		for(const auto& fixture : layer.fixtures)
+		{
+			const std::string cleanFixtureName = CleanNameForUSD(fixture.Name + fixture.UUID);
+			std::cout << "Clean fixture Name: " << cleanFixtureName << std::endl;
+			const auto& fixturePath = layerPath.AppendChild(TfToken(cleanFixtureName));
+			const auto& fixtureUsd = UsdGeomXform::Define(stage, fixturePath);
+			
+			auto fixtureXform = UsdGeomXformable(fixtureUsd);
+			auto transformOp = fixtureXform.AddTransformOp(UsdGeomXformOp::PrecisionDouble);
+
+			GfMatrix4d transform = GfMatrix4d();
+
+			for(int i = 0; i < 4 * 4; i++)
+			{
+				
+			}
+
+			transformOp.Set<GfMatrix4d>(transform);
+			// Custom Attributes ...
+		}
+	}
+	
     layer->TransferContent(newLayer);
 
 	return true;

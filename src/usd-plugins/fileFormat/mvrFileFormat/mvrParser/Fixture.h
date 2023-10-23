@@ -1,14 +1,17 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <array>
 
 namespace MVR {
+
+	using MVRMatrix = std::array<std::array<int, 4>, 4>;
 
 	struct FixtureSpecification
 	{
 		std::string Name;
 		std::string UUID;
-		std::string Matrix;
+		MVRMatrix Matrix;
 		std::string GDTFSpec;
 		std::string GDTFMode;
 		std::vector<std::string> CustomCommands;
@@ -32,7 +35,7 @@ namespace MVR {
 	private:
 		std::string m_Name;
 		std::string m_UUID;
-		std::string m_Matrix;
+		MVRMatrix m_Matrix;
 		std::string m_GDTFSpec;
 		std::string m_GDTFMode;
 		std::vector<std::string> m_CustomCommands;
