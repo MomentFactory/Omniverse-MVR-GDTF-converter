@@ -2,12 +2,13 @@
 #include "FixtureFactory.h"
 
 #include "Fixture.h"
-
+#include <iostream>
 
 namespace MVR {
 
 	LayerSpecification LayerFactory::CreateSpecificationFromXML(tinyxml2::XMLElement* element)
 	{
+		std::cout << "CreateSpecificationFromXML" << std::endl;
 		std::string name = std::string(element->FindAttribute("name")->Value());
 		std::string uuid = std::string(element->FindAttribute("uuid")->Value());
 		

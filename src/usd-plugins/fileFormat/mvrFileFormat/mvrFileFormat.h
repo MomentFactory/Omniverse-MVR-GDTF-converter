@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OMNI_MVR_MVRFILEFORMAT_H_
-#define OMNI_MVR_MVRFILEFORMAT_H_
+#ifndef OMNI_EDF_EDFFILEFORMAT_H_
+#define OMNI_EDF_EDFFILEFORMAT_H_
 
 #define NOMINMAX
 
-#include <pxr/base/tf/staticTokens.h>
 #include <pxr/pxr.h>
 #include <pxr/base/tf/token.h>
 #include <pxr/usd/sdf/fileFormat.h>
 #include <pxr/usd/sdf/layer.h>
+#include <pxr/usd/pcp/dynamicFileFormatInterface.h>
+#include <pxr/usd/pcp/dynamicFileFormatContext.h>
 
 #include "api.h"
-
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -34,7 +34,7 @@ PXR_NAMESPACE_OPEN_SCOPE
 /// Actual acquisition of the external data is done via a set
 /// of plug-ins to various back-end external data systems.
 ///
-class MVR_API MvrFileFormat : public SdfFileFormat
+class MVR_API MvrFileFormat : public SdfFileFormat, public PcpDynamicFileFormatInterface
 {
 public:
 	// SdfFileFormat overrides
@@ -43,9 +43,16 @@ public:
 	bool WriteToString(const SdfLayer& layer, std::string* str, const std::string& comment = std::string()) const override;
 	bool WriteToStream(const SdfSpecHandle& spec, std::ostream& out, size_t indent) const override;
 
+	// PcpDynamicFileFormatInterface overrides
+	void ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const override;
+	bool CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const override;
+
 protected:
 
 	SDF_FILE_FORMAT_FACTORY_ACCESS;
+
+	bool _ShouldSkipAnonymousReload() const override;
+	bool _ShouldReadAnonymousLayers() const override;
 
 	virtual ~MvrFileFormat();
 	MvrFileFormat();
@@ -56,8 +63,8 @@ TF_DECLARE_PUBLIC_TOKENS(
 	((Id, "mvrFileFormat")) 
 	((Version, "1.0")) 
 	((Target, "usd")) 
-	((Extension, "mvr"))
-	);
+	((Extension, "mvr")) 
+);
 
 TF_DECLARE_WEAK_AND_REF_PTRS(MvrFileFormat);
 

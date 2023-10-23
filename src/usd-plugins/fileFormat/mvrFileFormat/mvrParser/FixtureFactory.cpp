@@ -71,5 +71,7 @@ namespace MVR {
 		spec.CustomId = GetAttribute<uint32_t>(node, "CustomId");
 		// spec.CieColor = TryGetAttribAsString("CieColor"); TODO: Color
 		spec.CastShadows = GetAttribute<bool>(node, "CastShadow");
+
+		return spec;
 	}
 }

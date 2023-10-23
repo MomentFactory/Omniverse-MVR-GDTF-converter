@@ -29,6 +29,8 @@ namespace MVR {
 		auto zipFile = std::make_shared<ZipFile>(filePath);
 		HandleZipFile(zipFile);
 
+		std::cout << "DONE" << std::endl;
+
 		return m_Layers;
 	}
 
@@ -98,6 +100,7 @@ namespace MVR {
 				m_Errors.push(warnMsg);
 			}
 
+			std::cout << "Parsed XML file" << std::endl;
 			// Parse Scene in XML
 			// -------------------------------
 			LayerFactory layerFactory;
@@ -110,7 +113,7 @@ namespace MVR {
 				layers.push_back(layerFactory.CreateSpecificationFromXML(layer));
 			}
 
-			m_Layers = std::move(layers);
+			m_Layers = layers;
 		}
 
 		std::cout << "Found XML file: " << file.name << std::endl;

@@ -21,7 +21,7 @@
 #   define MVR_API
 #   define MVR_API_TEMPLATE_CLASS(...)
 #   define MVR_API_TEMPLATE_STRUCT(...)
-#   define MVR_LOCAL
+#   define EDF_LOCAL
 #else
 #   if defined(MVRFILEFORMAT_EXPORTS)
 #       define MVR_API ARCH_EXPORT
@@ -32,7 +32,7 @@
 #       define MVR_API_TEMPLATE_CLASS(...) ARCH_IMPORT_TEMPLATE(class, __VA_ARGS__)
 #       define MVR_API_TEMPLATE_STRUCT(...) ARCH_IMPORT_TEMPLATE(struct, __VA_ARGS__)
 #   endif
-#   define MVR_LOCAL ARCH_HIDDEN
+#   define EDF_LOCAL ARCH_HIDDEN
 #endif
 
 #endif

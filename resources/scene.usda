@@ -7,7 +7,7 @@
 
 def Xform "World"
 {
-    def "MetropolitanMuseumOfArt" (
+    def "mvrPayload" (
         payload = @./test.mvr@
     )
     {

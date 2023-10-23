@@ -1,20 +1,21 @@
 {
-  "Plugins": [
+    "Plugins": [
       {
         "Info": {
+
           "Types": {
-              "MvrFileFormat": {
-                "bases": [
-                  "SdfFileFormat"
-                ],
-                "displayName": "MVR Dynamic File Format",
-                "extensions": [
-                  "mvr"
-                ],
-                "formatId": "mvrFileFormat",
-                "primary": true,
-                "target": "usd"
-              }
+            "MvrFileFormat": {
+              "bases": [
+                "SdfFileFormat"
+              ],
+              "displayName": "EDF Dynamic File Format",
+              "extensions": [
+                "mvr"
+              ],
+              "formatId": "mvrFileFormat",
+              "primary": true,
+              "target": "usd"
+            }
           }
         },
         "LibraryPath": "@PLUG_INFO_LIBRARY_PATH@",
@@ -22,6 +23,6 @@
         "ResourcePath": "@PLUG_INFO_RESOURCE_PATH@",
         "Root": "@PLUG_INFO_ROOT@",
         "Type": "library"
-    }
-  ]
+      }
+    ]
 }

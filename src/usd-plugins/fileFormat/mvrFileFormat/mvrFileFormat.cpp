@@ -14,8 +14,6 @@
 
 #include "mvrFileFormat.h"
 
-#include <pxr/pxr.h>
-
 #include <pxr/base/tf/diagnostic.h>
 #include <pxr/base/tf/stringUtils.h>
 #include <pxr/base/tf/token.h>
@@ -24,6 +22,21 @@
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usd/usdaFileFormat.h>
 
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usdGeom/scope.h>
+#include <pxr/usd/usdGeom/camera.h>
+#include <pxr/usd/usdGeom/cube.h>
+#include <pxr/usd/usdGeom/xformable.h>
+#include <pxr/usd/usdGeom/xform.h>
+
+#include <pxr/usd/usdLux/rectLight.h>
+
+#include <pxr/base/gf/matrix3f.h>
+#include <pxr/base/gf/vec3f.h>
+
+#include "mvrParser/MVRParser.h"
+
+#include <iostream>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -44,41 +57,38 @@ bool MvrFileFormat::CanRead(const std::string& filePath) const
 	return true;
 }
 
-static std::string CleanNameForUSD(const std::string& name)
-{
-	std::string cleanedName = name;
-	if(cleanedName.size() == 0)
-	{
-		return "Default";
-	}
-
-	if(cleanedName.size() == 1 && !TfIsValidIdentifier(cleanedName))
-	{
-		// If we have an index as a name, we only need to add _ beforehand.
-		return CleanNameForUSD("_" + cleanedName);
-	}
-
-	return TfMakeValidIdentifier(cleanedName);
-}
-
 bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool metadataOnly) const
 {
-    PXR_NAMESPACE_USING_DIRECTIVE
+	// these macros emit methods defined in the Pixar namespace
+	// but not properly scoped, so we have to use the namespace
+	// locally here - note this isn't strictly true since we had to open
+	// the namespace scope anyway because the macros won't allow non-Pixar namespaces
+	// to be used because of some auto-generated content
+	PXR_NAMESPACE_USING_DIRECTIVE
 	if (!TF_VERIFY(layer))
 	{
 		return false;
 	}
-	//MVR::MVRParser mvrParser;
-	//auto result = mvrParser.ParseMVRFile(resolvedPath);
+
+	using namespace MVR;
+	auto parser = MVRParser();
+	auto layers = parser.ParseMVRFile(resolvedPath);
+	for(auto& layer : layers)
+	{
+		std::cout << layer.name << std::endl;
+	}
+	
+	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
+	UsdStageRefPtr stage = UsdStage::Open(newLayer);
+
+	const auto& xformPath = SdfPath("/mvr_payload");
+	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
+	stage->SetDefaultPrim(defaultPrim.GetPrim());
     //
-    //while (mvrParser.HasError())
-    //{
-    //    TF_CODING_ERROR(mvrParser.PopError());
-    //    return false;
-    //}
-    //
-    //// Create USD Stage
-    //// -----------------------------------
+	//// TODO: Create usd scene.
+	//
+    //// Copy contents into output layer.
+    layer->TransferContent(newLayer);
 
 	return true;
 }
@@ -93,6 +103,26 @@ bool MvrFileFormat::WriteToStream(const SdfSpecHandle& spec, std::ostream& out, 
 {
 	// this POC doesn't support writing
 	return false;
+}
+
+bool MvrFileFormat::_ShouldSkipAnonymousReload() const
+{
+	return false;
+}
+
+bool MvrFileFormat::_ShouldReadAnonymousLayers() const
+{
+	return true;
+}
+
+void MvrFileFormat::ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const
+{
+	return;
+}
+
+bool MvrFileFormat::CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const
+{
+	return true;
 }
 
 // these macros emit methods defined in the Pixar namespace
