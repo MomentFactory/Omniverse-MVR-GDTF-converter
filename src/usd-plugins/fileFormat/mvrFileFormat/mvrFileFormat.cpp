@@ -120,15 +120,28 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			auto fixtureXform = UsdGeomXformable(fixtureUsd);
 			auto transformOp = fixtureXform.AddTransformOp(UsdGeomXformOp::PrecisionDouble);
 
-			GfMatrix4d transform = GfMatrix4d();
-
-			for(int i = 0; i < 4 * 4; i++)
-			{
-				
-			}
+			GfMatrix4d transform = GfMatrix4d(
+				fixture.Matrix[0][0], fixture.Matrix[1][0], fixture.Matrix[2][0], 0,
+				fixture.Matrix[0][1], fixture.Matrix[1][1], fixture.Matrix[2][1], 0,
+				fixture.Matrix[0][2], fixture.Matrix[1][2], fixture.Matrix[2][2], 0,
+				fixture.Matrix[0][3], fixture.Matrix[1][3], fixture.Matrix[2][3], 1
+			);
 
 			transformOp.Set<GfMatrix4d>(transform);
-			// Custom Attributes ...
+
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:name"), pxr::SdfValueTypeNames->String).Set(fixture.Name);
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:uuid"), pxr::SdfValueTypeNames->String).Set(fixture.UUID);	
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:GDTFSpec"), pxr::SdfValueTypeNames->String).Set(fixture.GDTFSpec);
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:GDTFMode"), pxr::SdfValueTypeNames->String).Set(fixture.GDTFMode);
+
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:Classing"), pxr::SdfValueTypeNames->String).Set(fixture.Classing);
+
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:FixtureID"), pxr::SdfValueTypeNames->UInt).Set(fixture.FixtureID);
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:UnitNumber"), pxr::SdfValueTypeNames->UInt).Set(fixture.UnitNumber);
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:FixtureTypeId"), pxr::SdfValueTypeNames->UInt).Set(fixture.FixtureTypeID);
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CustomId"), pxr::SdfValueTypeNames->UInt).Set(fixture.CustomId);
+
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CastShadow"), pxr::SdfValueTypeNames->Bool).Set(fixture.CastShadows);
 		}
 	}
 	

@@ -1,6 +1,12 @@
 #include "FixtureFactory.h"
 #include "Fixture.h"
 
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iostream>
+
+
 #define GetAttribAsString(name) std::string(node->FindAttribute(name)->Value());
 #define TryGetAttribAsString(name) node->FindAttribute(name) ? std::string(node->FindAttribute(name)->Value()) : "";
 
@@ -34,20 +40,40 @@ namespace MVR {
 		return element->FindAttribute(name.c_str()) ? element->FindAttribute(name.c_str())->BoolValue() : false;
 	}
 
-	template<>
-	MVRMatrix GetAttribute<MVRMatrix>(tinyxml2::XMLElement* element, const std::string& name)
-	{
-		MVRMatrix result;
-		result[9][2] = 2;
-		return MVRMatrix();
-	}
-
 	FixtureSpecification FixtureFactory::CreateFromXML(tinyxml2::XMLElement* node)
 	{
 		FixtureSpecification spec;
 		spec.Name = GetAttribute<std::string>(node, "name");
 		spec.UUID = GetAttribute<std::string>(node, "uuid");
-		spec.Matrix = GetAttribute<std::string>(node, "Matrix");
+		
+		auto inputString = std::string(node->FirstChildElement("Matrix")->GetText());
+		inputString = inputString.substr(inputString.find("{") + 1, inputString.rfind("}") - inputString.find("{") - 1);
+
+		// Replace "},{" with ";"
+		size_t pos;
+		while ((pos = inputString.find("}{")) != std::string::npos) {
+			inputString.replace(pos, 2, ";");
+		}
+
+		// Replace "," with space
+		for (char& c : inputString) {
+			if (c == ',') {
+				c = ' ';
+			}
+		}
+
+		MVRMatrix output;
+		std::istringstream iss(inputString);
+
+		for (int i = 0; i < 4; ++i) {
+			for (int j = 0; j < 3; ++j) {
+				if (!(iss >> output[j][i])) {
+					// Handle any parsing error here if needed
+				}
+			}
+		}
+
+		spec.Matrix = output;
 		spec.GDTFSpec = GetAttribute<std::string>(node, "GDTFSpec");
 		spec.GDTFMode = GetAttribute<std::string>(node, "GDTFMode");
 
@@ -63,7 +89,6 @@ namespace MVR {
 
 		spec.Classing = GetAttribute<std::string>(node, "Classing");;
 
-		// Addresses
 		auto addresses = node->FirstChildElement("Addresses");
 		if (addresses)
 		{
@@ -77,7 +102,6 @@ namespace MVR {
 		spec.UnitNumber = GetAttribute<uint32_t>(node, "UnitNumber");
 		spec.FixtureID = GetAttribute<uint32_t>(node, "FixtureID");
 		spec.CustomId = GetAttribute<uint32_t>(node, "CustomId");
-		// spec.CieColor = TryGetAttribAsString("CieColor"); TODO: Color
 		spec.CastShadows = GetAttribute<bool>(node, "CastShadow");
 
 		return spec;

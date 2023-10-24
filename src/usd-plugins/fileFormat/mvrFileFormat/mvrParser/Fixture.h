@@ -5,7 +5,7 @@
 
 namespace MVR {
 
-	using MVRMatrix = std::array<std::array<int, 4>, 4>;
+	using MVRMatrix = std::array<std::array<double, 4>, 3>;
 
 	struct FixtureSpecification
 	{
