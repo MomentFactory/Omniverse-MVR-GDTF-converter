@@ -73,7 +73,7 @@ Root/
 
 When importing an MVR files, some properties specific to MVR and not compatible with USD will be imported as raw USD properties of an Xform holding a lighting fixture :
 
-| property               | type                                                                                               |    description                                                                           |
+| Property               | Type                                                                                               |    Description                                                                           |
 |---                     |---                                                                                                 |---                                                                                       |
 |`mf:mvr:name`           |[🔗String](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)        | The name of the object.                                                                 |
 |`mf:mvr:uuid`           |[🔗UUID](https://github.com/mvrdevelopment/spec/blob/main/mvr-spec.md#generic-value-types)          | The unique identifier of the object.                                                    |
@@ -110,6 +110,28 @@ Root/
    │         └─🧊 mesh (Mesh)
    └─📁Looks (Scope)
 ```
+
+# GDTF Raw USD Properties
+
+## Fixture
+| Property                          | Type                                                                                                         | Description
+|---                                |---                                                                                                           |---
+|`mf:gdtf:OperatingTemperature:High`|[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)  | Lowest temperature the device can be operated. Unit: °C.
+|`mf:gdtf:OperatingTemperature:Low` |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)  | Highest temperature the device can be operated. Unit: °C.
+|`mf:gdtf:Weight`                   |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)  | Weight of the device including all accessories. Unit: kilogram.
+|`mf:gdtf:LegHeight`                |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)  | Defines height of the legs - distance between the floor and the bottom base plate. Unit: meter.
+
+## Beam (Light)
+| Property                    | Type                                                                                                       | Description
+|---                          |---                                                                                                         |---
+|`mf:gdtf:BeamAngle`          |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)| Beam angle; Unit: degree.
+|`mf:gdtf:BeamType`           |[🔗Enum](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types) | Beam Type; Specified values: "Wash", "Spot", "None", "Rectangle", "PC", "Fresnel", "Glow".
+|`mf:gdtf:ColorRenderingIndex`|[🔗Uint](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types) | The CRI according to TM-30 is a quantitative measure of the ability of the light source showing the object color naturally as it does as daylight reference.
+|`mf:gdtf:ColorTemperature`   |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)| Color temperature; Unit: kelvin.
+|`mf:gdtf:FieldAngle`         |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)| Field angle; Unit: degree.
+|`mf:gdtf:LampType`           |[🔗Enum](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types) | Defines type of the light source; The currently defined types are: Discharge, Tungsten, Halogen, LED.
+|`mf:gdtf:LuminousFlux`       |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)| Intensity of all the represented light emitters; Unit: lumen.
+|`mf:gdtf:PowerConsumption`   |[🔗Float](https://github.com/mvrdevelopment/spec/blob/main/gdtf-spec.md#table-1--xml-attribute-value-types)| ower consumption; Unit: Watt.
 
 # Notes
 
