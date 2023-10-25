@@ -32,6 +32,7 @@
 #include <pxr/usd/usdLux/rectLight.h>
 
 #include <pxr/base/gf/matrix3f.h>
+#include <pxr/base/gf/rotation.h>
 #include <pxr/base/gf/vec3f.h>
 
 #include "mvrParser/MVRParser.h"
@@ -93,7 +94,6 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 	auto parser = MVRParser();
 	auto layers = parser.ParseMVRFile(resolvedPath);
 
-
 	// Create USD Schema
 	// ------------------------
 	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
@@ -105,7 +105,6 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 	for(const auto& layer : layers)
 	{
 		const std::string cleanName = CleanNameForUSD(layer.name);
-		std::cout << "Clean layer Name: " << cleanName << std::endl;
 
 		const auto& layerPath = xformPath.AppendChild(TfToken(CleanNameForUSD(layer.name)));
 		auto layerUsd = UsdGeomScope::Define(stage, layerPath);
@@ -113,21 +112,34 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 		for(const auto& fixture : layer.fixtures)
 		{
 			const std::string cleanFixtureName = CleanNameForUSD(fixture.Name + fixture.UUID);
-			std::cout << "Clean fixture Name: " << cleanFixtureName << std::endl;
 			const auto& fixturePath = layerPath.AppendChild(TfToken(cleanFixtureName));
 			const auto& fixtureUsd = UsdGeomXform::Define(stage, fixturePath);
-			
-			auto fixtureXform = UsdGeomXformable(fixtureUsd);
-			auto transformOp = fixtureXform.AddTransformOp(UsdGeomXformOp::PrecisionDouble);
 
 			GfMatrix4d transform = GfMatrix4d(
-				fixture.Matrix[0][0], fixture.Matrix[1][0], fixture.Matrix[2][0], 0,
-				fixture.Matrix[0][1], fixture.Matrix[1][1], fixture.Matrix[2][1], 0,
-				fixture.Matrix[0][2], fixture.Matrix[1][2], fixture.Matrix[2][2], 0,
-				fixture.Matrix[0][3], fixture.Matrix[1][3], fixture.Matrix[2][3], 1
+				fixture.Matrix[0][0], fixture.Matrix[0][1], fixture.Matrix[0][2], 0,
+				fixture.Matrix[1][0], fixture.Matrix[1][1], fixture.Matrix[1][2], 0,
+				fixture.Matrix[2][0], fixture.Matrix[2][1], fixture.Matrix[2][2], 0,
+				fixture.Matrix[3][0], fixture.Matrix[3][1], fixture.Matrix[3][2], 1
 			);
 
-			transformOp.Set<GfMatrix4d>(transform);
+			// Offset matrix
+			GfMatrix3d rotateMinus90deg = GfMatrix3d(1,  0, 0, 
+													 0,  0, 1, 
+													 0, -1, 0);
+
+			// Translation
+			GfVec3d translation = rotateMinus90deg * transform.ExtractTranslation();
+
+			// Rotation
+			GfRotation rotation = transform.ExtractRotation();
+			GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
+			GfVec3d rotate = euler;
+
+			// Set transform
+			auto fixtureXform = UsdGeomXformable(fixtureUsd);
+			fixtureXform.ClearXformOpOrder();
+			fixtureXform.AddTranslateOp().Set(translation * 0.1f);
+			fixtureXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:name"), pxr::SdfValueTypeNames->String).Set(fixture.Name);
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:uuid"), pxr::SdfValueTypeNames->String).Set(fixture.UUID);	

@@ -64,7 +64,6 @@ namespace MVR {
 	{
 		std::cout << "Found GDTF archive." << std::endl;
 		// TODO: Read zip content and unzip.
-		// 
 		//HandleZipFile(ZipFile(std::istringstream(fileContent)));
 	}
 
@@ -80,7 +79,6 @@ namespace MVR {
 			tinyxml2::XMLDocument doc;
 			if (doc.Parse(file.content.c_str()) != tinyxml2::XML_SUCCESS)
 			{
-				// TODO: Warn message.
 				m_Errors.push("Failed to parse XML file: " + file.name);
 				return;
 			}
@@ -100,7 +98,6 @@ namespace MVR {
 				m_Errors.push(warnMsg);
 			}
 
-			std::cout << "Parsed XML file" << std::endl;
 			// Parse Scene in XML
 			// -------------------------------
 			LayerFactory layerFactory;
@@ -115,8 +112,6 @@ namespace MVR {
 
 			m_Layers = layers;
 		}
-
-		std::cout << "Found XML file: " << file.name << std::endl;
 	}
 
 	bool MVRParser::FileExists(const std::string& path) const

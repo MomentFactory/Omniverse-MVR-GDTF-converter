@@ -52,12 +52,14 @@ namespace MVR {
 		// Replace "},{" with ";"
 		size_t pos;
 		while ((pos = inputString.find("}{")) != std::string::npos) {
-			inputString.replace(pos, 2, ";");
+			inputString.replace(pos, 2, " ");
 		}
 
 		// Replace "," with space
-		for (char& c : inputString) {
-			if (c == ',') {
+		for (char& c : inputString) 
+		{
+			if (c == ',' || c == ';') 
+			{
 				c = ' ';
 			}
 		}
@@ -65,15 +67,19 @@ namespace MVR {
 		MVRMatrix output;
 		std::istringstream iss(inputString);
 
-		for (int i = 0; i < 4; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				if (!(iss >> output[j][i])) {
+		for (int i = 0; i < 4; ++i) 
+		{
+			for (int j = 0; j < 3; ++j) 
+			{
+				if (!(iss >> output[i][j])) 
+				{
 					// Handle any parsing error here if needed
 				}
 			}
 		}
 
 		spec.Matrix = output;
+		
 		spec.GDTFSpec = GetAttribute<std::string>(node, "GDTFSpec");
 		spec.GDTFMode = GetAttribute<std::string>(node, "GDTFMode");
 
