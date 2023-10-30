@@ -41,6 +41,9 @@ class USDTools:
             stage.Save()
             return stage
 
+    def get_default_prim(stage: Usd.Stage) -> Usd.Prim:
+        return stage.GetDefaultPrim()
+
     def add_reference(stage: Usd.Stage, ref_path_relative: str, stage_path: str, stage_subpath: str) -> Tuple[
             UsdGeom.Xform, UsdGeom.Xform]:
         xform_parent: UsdGeom.Xform = UsdGeom.Xform.Define(stage, stage_path)
@@ -88,7 +91,7 @@ class USDTools:
         )
         return gf_matrix
 
-    def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float):
+    def add_beam(stage: Usd.Stage, path: str, position_matrix: str, radius: float) -> UsdLux:
         applied_scale = USDTools.compute_applied_scale(stage)
         axis_matrix = USDTools.get_axis_rotation_matrix()
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
@@ -96,6 +99,7 @@ class USDTools:
         rotation += Gf.Vec3d(-90, 0, 0)
         scale = Gf.Vec3d(radius * 2, radius * 2, 1)
         USDTools._set_light_xform(light, translation, rotation, scale)
+        return light
 
     def add_light_default(stage: Usd.Stage, path: str, height: float, diameter: float):
         light: UsdLux.DiskLight = UsdLux.DiskLight.Define(stage, path)
@@ -134,3 +138,6 @@ class USDTools:
         rotation_value = axis_matrix * euler
 
         return translation_value, rotation_value
+
+    def set_prim_attribute(prim: Usd.Prim, attribute_name: str, attribute_type: Sdf.ValueTypeNames, attribute_value):
+        prim.CreateAttribute(f"mf:gdtf:{attribute_name}", attribute_type).Set(attribute_value)

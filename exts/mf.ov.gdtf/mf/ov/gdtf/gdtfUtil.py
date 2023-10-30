@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from pxr import UsdGeom
+from pxr import Usd, UsdGeom, Sdf
 
 from .filepathUtility import Filepath
 from .USDTools import USDTools
@@ -8,6 +8,39 @@ from .USDTools import USDTools
 
 def get_attrib_if_exists(node: ET.Element, attr: str):
     return node.attrib[attr] if attr in node.attrib else None
+
+
+def get_attrib_text_if_exists(node: ET.Element, attr: str):
+    return get_attrib_if_exists(node, attr)
+
+
+def get_attrib_int_if_exists(node: ET.Element, attr: str):
+    str_value = get_attrib_if_exists(node, attr)
+    if str_value is not None:
+        return int(str_value)
+    return None
+
+
+def get_attrib_float_if_exists(node: ET.Element, attr: str):
+    str_value = get_attrib_if_exists(node, attr)
+    if str_value is not None:
+        return float(str_value)
+    return None
+
+
+def set_attribute_text_if_valid(prim: Usd.Prim, name: str, value: str):
+    if value is not None:
+        USDTools.set_prim_attribute(prim, name, Sdf.ValueTypeNames.String, value)
+
+
+def set_attribute_int_if_valid(prim: Usd.Prim, name: str, value: str):
+    if value is not None:
+        USDTools.set_prim_attribute(prim, name, Sdf.ValueTypeNames.Int, value)
+
+
+def set_attribute_float_if_valid(prim: Usd.Prim, name: str, value: str):
+    if value is not None:
+        USDTools.set_prim_attribute(prim, name, Sdf.ValueTypeNames.Float, value)
 
 
 class Model:
@@ -109,11 +142,22 @@ class Geometry:
     def get_xform_parent(self) -> UsdGeom.Xform:
         return self._xform_parent
 
+
 class Beam:
     def __init__(self, geometry: Geometry, node: ET.Element):
         self._radius = float(node.attrib["BeamRadius"])
         self._position_matrix = geometry.get_position_matrix()
         self._stage_path = geometry.get_stage_path()
+
+        # The attributes should always exists as per standard definition
+        self._beam_angle = get_attrib_float_if_exists(node, "BeamAngle")
+        self._beam_type = get_attrib_text_if_exists(node, "BeamType")
+        self._color_rendering_index = get_attrib_int_if_exists(node, "ColorRenderingIndex")
+        self._color_temperature = get_attrib_float_if_exists(node, "ColorTemperature")
+        self._field_angle = get_attrib_float_if_exists(node, "FieldAngle")
+        self._lamp_type = get_attrib_text_if_exists(node, "LampType")
+        self._luminous_flux = get_attrib_float_if_exists(node, "LuminousFlux")
+        self._power_consumption = get_attrib_float_if_exists(node, "PowerConsumption")
 
     def get_radius(self) -> float:
         return self._radius
@@ -123,3 +167,43 @@ class Beam:
 
     def get_stage_path(self) -> str:
         return self._stage_path
+
+    def apply_attributes_to_prim(self, prim: Usd.Prim):
+        set_attribute_float_if_valid(prim, "BeamAngle", self._beam_angle)
+        set_attribute_text_if_valid(prim, "BeamType", self._beam_type)
+        set_attribute_int_if_valid(prim, "ColorRenderingIndex", self._color_rendering_index)
+        set_attribute_float_if_valid(prim, "ColorTemperature", self._color_temperature)
+        set_attribute_float_if_valid(prim, "FieldAngle", self._field_angle)
+        set_attribute_text_if_valid(prim, "LampType", self._lamp_type)
+        set_attribute_float_if_valid(prim, "LuminousFlux", self._luminous_flux)
+        set_attribute_float_if_valid(prim, "PowerConsumption", self._power_consumption)
+
+
+class FixtureAttributes:
+    def __init__(self, root: ET.Element):
+        self._operating_temperature_high = None
+        self._operating_temperature_low = None
+        self._weight = None
+        self._leg_height = None
+
+        node_fixture: ET.Element = root.find("FixtureType")
+        node_physdesc: ET.Element = node_fixture.find("PhysicalDescriptions")
+        if node_physdesc is not None:
+            node_properties: ET.Element = node_physdesc.find("Properties")
+            if node_properties is not None:
+                node_operatingtemp: ET.Element = node_properties.find("OperatingTemperature")
+                if node_operatingtemp is not None:
+                    self._operating_temperature_high = get_attrib_float_if_exists(node_operatingtemp, "High")
+                    self._operating_temperature_low = get_attrib_float_if_exists(node_operatingtemp, "Low")
+                node_weight: ET.Element = node_properties.find("Weight")
+                if node_weight is not None:
+                    self._weight = get_attrib_float_if_exists(node_weight, "Value")
+                node_legheight: ET.Element = node_properties.find("LegHeight")
+                if node_legheight is not None:
+                    self._leg_height = get_attrib_float_if_exists(node_legheight, "Value")
+
+    def apply_attributes_to_prim(self, prim: Usd.Prim):
+        set_attribute_float_if_valid(prim, "OperatingTemperature:High", self._operating_temperature_high)
+        set_attribute_float_if_valid(prim, "OperatingTemperature:Low", self._operating_temperature_low)
+        set_attribute_float_if_valid(prim, "Weight", self._weight)
+        set_attribute_float_if_valid(prim, "LegHeight", self._leg_height)
