@@ -22,6 +22,36 @@ This repository contains two separate extensions :
 
 Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
+# Build the FileFormat plugin
+
+### Retrieve Submodule
+
+`git submodule update --init`
+
+### Build DLL
+
+`build.bat`
+
+### Build for USDView
+
+//TODO documenter comment changer nv_usd pour vanilla 
+
+`source setenvwindows`
+
+Test :
+
+`usdview resources/scene.usda`
+
+### Insert DLL in built extension
+
+Once the build is complete, a dll should be available following this path :
+
+`_install/windows-x86_64/release/mvrFileFormat/lib/mvriFileFormat.dll`
+
+Simply copy this dll into the extension folder by running : 
+
+`cp _install/windows-x86_64/release/mvrFileFormat/lib/mvrFileFormat.dll exts/mf.ov.mvr_converter/plugin`
+
 # Sample files
 
 An [MVR sample file](./exts/mf.ov.mvr/sample/7-fixtures-sample.mvrt/) and a [GDTF sample file](./exts/mf.ov.gdtf/sample/Robe_Lighting@Robin_MMX_Blade@2023-07-25__Beam_revision.gdtf) are provided with this repository. 
