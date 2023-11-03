@@ -32,15 +32,40 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
 `build.bat`
 
-### Build for USDView
-
-//TODO documenter comment changer nv_usd pour vanilla 
+#### Build for USDView
 
 `source setenvwindows`
 
-Test :
+Test with `usdview resources/scene.usda`
 
-`usdview resources/scene.usda`
+#### Build for Omniverse 
+
+To switch to the nv_usd of Omniverse, it is required to edit the packman configuration file to: 
+
+```
+<project toolsVersion="5.6">
+  <dependency name="nv-usd" linkPath="../_build/usd-deps/nv-usd/${config}">
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-win64_py310_${config}-dev_omniverse" platforms="windows-x86_64" />
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-linux64_py310-centos_${config}-dev_omniverse" platforms="linux-x86_64" />
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-linux-aarch64_py310_${config}-dev_omniverse" platforms="linux-aarch64" />
+  </dependency>
+  <dependency name="python" linkPath="../_build/usd-deps/python">
+    <package name="python" version="3.10.13+nv1-${platform}" />
+  </dependency>
+</project>
+```
+Configuration for USD view
+
+```
+<project toolsVersion="5.6">
+  <dependency name="nv-usd" linkPath="../_build/usd-deps/nv-usd/${config}">
+    <package name="usd.py310.${platform}.usdview.${config}" version="0.23.05-tc.47+v23.05.b53573ea" />
+  </dependency>
+  <dependency name="python" linkPath="../_build/usd-deps/python">
+    <package name="python" version="3.10.13+nv1-${platform}" />
+  </dependency>
+</project>
+```
 
 ### Insert DLL in built extension
 
