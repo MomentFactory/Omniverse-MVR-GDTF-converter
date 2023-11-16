@@ -12,7 +12,8 @@ plugin_dir = "${root}/src/usd-plugins/fileFormat/mvrFileFormat"
 install_root = "${root}/_install/%{platform}/%{config}/mvrFileFormat"
 include_dir = "include/mvrFileFormat"
 additional_include_dirs = [
-    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb"
+    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb",
+    "${root}/src/usd-plugins/fileFormat/mvrFileFormat/assimp/include"
 ]
 public_headers = [
     "api.h"
@@ -24,6 +25,8 @@ private_headers = [
     "mvrParser/FixtureFactory.h",
     "mvrParser/LayerFactory.h",
     "mvrParser/MVRParser.h",
+    "gdtfParser/GdtfParser.h",
+    "gdtfParser/ModelSpecification.h",
 ]
 cpp_files = [
     "mvrFileFormat.cpp",
@@ -32,11 +35,20 @@ cpp_files = [
     "mvrParser/LayerFactory.cpp",
     "mvrParser/MVRParser.cpp",
     "mvrParser/tinyxml2.cpp",
-    "mvrParser/zip_file.hpp",
+    "gdtfParser/GdtfParser.cpp",
 ]
 
 resource_files = [
     "plugInfo.json"
+]
+
+additional_library_dirs = [
+    "${root}/src/usd-plugins/fileFormat/mvrFileFormat"
+]
+
+additional_static_libs = [
+    "assimp",
+    "zlibstatic"
 ]
 
 usd_lib_dependencies = [

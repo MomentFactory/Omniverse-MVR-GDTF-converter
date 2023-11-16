@@ -2,17 +2,18 @@
 
 #include "Fixture.h"
 
+
+
 #include <vector>
 #include <stack>
 #include <string>
 #include <memory>
 
-namespace miniz_cpp {
-
+namespace miniz_cpp2
+{
 	class zip_file;
 }
-
-using ZipFile = miniz_cpp::zip_file;
+using ZipFile = miniz_cpp2::zip_file;
 
 namespace MVR {
 
@@ -53,6 +54,7 @@ namespace MVR {
 
 	private:
 		const std::string m_SceneDescriptionFileName = "GeneralSceneDescription.xml";
+		std::string m_TargetPath;
 
 		std::stack<std::string> m_Errors;
 		std::vector<LayerSpecification> m_Layers;

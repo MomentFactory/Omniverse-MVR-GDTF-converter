@@ -1,16 +1,20 @@
 #include "LayerFactory.h"
 #include "MVRParser.h"
 
-#include "tinyxml2.h"
+#include "zip_file2.hpp"
 
-#include "zip_file.hpp"
-using ZipFile = miniz_cpp::zip_file;
-using ZipInfo = miniz_cpp::zip_info;
+using ZipInfo = miniz_cpp2::zip_info;
 using ZipInfoList = std::vector<ZipInfo>;
+
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
+
+#include "tinyxml2.h"
 
 #include <sstream>
 #include <fstream>
-
+#include "assimp/Importer.hpp"
+#include "assimp/Exporter.hpp"
 
 namespace MVR {
 
@@ -21,6 +25,8 @@ namespace MVR {
 			m_Errors.push("Failed to parse MVR file: file doesn't exists - " + path);
 			return {};
 		}
+
+		m_TargetPath = path + "/../";
 
 		// We open the .mvr archive and parse the file tree and handle files
 		// by their file extension. XML, gltf, 3ds.
@@ -63,6 +69,28 @@ namespace MVR {
 	void MVRParser::HandleGDTF(const File& file)
 	{
 		std::cout << "Found GDTF archive." << std::endl;
+		auto ss = std::istringstream(file.content);
+		auto zipFile = std::make_shared<ZipFile>(ss);
+		for (const ZipInfo& info : zipFile->infolist())
+		{
+			std::cout << info.filename << std::endl;
+			const std::string& fileContent = zipFile->read(info);
+			File file = { info.filename, fileContent };
+
+			const FileType fileType = GetFileTypeFromExtension(GetFileExtension(info.filename));
+			switch (fileType)
+			{
+			case FileType::MODEL:
+				HandleModel(file);
+				break;
+			default:
+				break; // Skip unknown file format.
+			}
+
+
+			
+		}
+
 		// TODO: Read zip content and unzip.
 		//HandleZipFile(ZipFile(std::istringstream(fileContent)));
 	}
@@ -70,6 +98,16 @@ namespace MVR {
 	void MVRParser::HandleModel(const File& file)
 	{
 		std::cout << "Found 3D model: " << file.name << std::endl;
+
+		Assimp::Importer importer;
+		const aiScene* scene = importer.ReadFileFromMemory(file.content.data(), file.content.size() , aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices,"EXTENTION");
+
+
+		Assimp::Exporter exporter;
+		std::string convertedFileName = m_TargetPath + file.name + ".gltf";
+		exporter.Export(scene, "gltf2", convertedFileName);
+
+		std::cout << "Converted asset: " << file.name << " to " << convertedFileName << std::endl;
 	}
 
 	void MVRParser::HandleXML(const File& file)
@@ -151,9 +189,13 @@ namespace MVR {
 		{
 			return FileType::MODEL;
 		}
-		else if (fileExtension == "gdtf")
+		else if(fileExtension == "gdtf")
 		{
 			return FileType::GDTF;
+		}
+		else if(fileExtension == "3ds")
+		{
+			return FileType::MODEL;
 		}
 
 		return FileType::UNKNOWN;
