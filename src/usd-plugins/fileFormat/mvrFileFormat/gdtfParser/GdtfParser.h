@@ -8,6 +8,11 @@
 #include <memory>
 
 
+namespace miniz_cpp2
+{
+	class zip_file;
+}
+using ZipFile = miniz_cpp2::zip_file;
 
 namespace GDTF {
 

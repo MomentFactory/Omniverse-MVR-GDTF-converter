@@ -1,5 +1,6 @@
 #include "LayerFactory.h"
 #include "MVRParser.h"
+#include "../gdtfParser/ModelSpecification.h"
 
 #include "zip_file2.hpp"
 
@@ -15,6 +16,9 @@ using ZipInfoList = std::vector<ZipInfo>;
 #include <fstream>
 #include "assimp/Importer.hpp"
 #include "assimp/Exporter.hpp"
+
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
 
 namespace MVR {
 
@@ -55,7 +59,7 @@ namespace MVR {
 				HandleGDTF(file);
 				break;
 			case FileType::MODEL:
-				HandleModel(file);
+				//HandleModel(file);
 				break;
 			case FileType::XML:
 				HandleXML(file);
@@ -71,6 +75,12 @@ namespace MVR {
 		std::cout << "Found GDTF archive." << std::endl;
 		auto ss = std::istringstream(file.content);
 		auto zipFile = std::make_shared<ZipFile>(ss);
+
+		std::map<std::string, std::vector<File>> fixtures;
+		std::vector<File> assetFiles;
+
+		GDTF::GDTFSpecification spec;
+		
 		for (const ZipInfo& info : zipFile->infolist())
 		{
 			std::cout << info.filename << std::endl;
@@ -80,34 +90,72 @@ namespace MVR {
 			const FileType fileType = GetFileTypeFromExtension(GetFileExtension(info.filename));
 			switch (fileType)
 			{
-			case FileType::MODEL:
-				HandleModel(file);
-				break;
-			default:
-				break; // Skip unknown file format.
+				case FileType::XML:
+				{
+					tinyxml2::XMLDocument doc;
+					if (doc.Parse(file.content.c_str()) != tinyxml2::XML_SUCCESS)
+					{
+						m_Errors.push("Failed to parse XML file: " + file.name);
+						return;
+					}
+
+					tinyxml2::XMLElement* root = doc.RootElement();
+
+					auto fixtureType = root->FirstChildElement("FixtureType");
+					std::string name = (fixtureType->FindAttribute("Name"))->Value();
+					spec.Name = name;
+					auto models = fixtureType->FirstChildElement("Models");
+
+					for(auto* model = models->FirstChildElement("Model"); model; model = model->NextSiblingElement())
+					{
+						GDTF::ModelSpecification modelSpec;
+						modelSpec.Name = model->FindAttribute("Name")->Value();
+						modelSpec.File = model->FindAttribute("File")->Value();
+
+						spec.Models.push_back(modelSpec);
+					}
+					break;
+				}
+				case FileType::MODEL:
+				{
+					
+					assetFiles.push_back(file);
+					break;
+				}
+				default:
+					break; // Skip unknown file format.
 			}
+		}
 
-
-			
+		for(auto& f : assetFiles)
+		{
+			HandleModel(f, spec.Name);
 		}
 
 		// TODO: Read zip content and unzip.
 		//HandleZipFile(ZipFile(std::istringstream(fileContent)));
 	}
 
-	void MVRParser::HandleModel(const File& file)
+	void MVRParser::HandleModel(const File& file, const std::string& fixtureName)
 	{
 		std::cout << "Found 3D model: " << file.name << std::endl;
 
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFileFromMemory(file.content.data(), file.content.size() , aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices,"EXTENTION");
 
-
 		Assimp::Exporter exporter;
-		std::string convertedFileName = m_TargetPath + file.name + ".gltf";
-		exporter.Export(scene, "gltf2", convertedFileName);
 
-		std::cout << "Converted asset: " << file.name << " to " << convertedFileName << std::endl;
+		std::experimental::filesystem::path targetPath = m_TargetPath;
+
+		std::experimental::filesystem::path destination = targetPath.parent_path().append(fixtureName);
+		std::experimental::filesystem::create_directory(destination);
+
+		std::experimental::filesystem::path convertedFileName = destination.append((std::experimental::filesystem::path(file.name).stem().concat(".gltf").c_str()));
+
+		exporter.Export(scene, "gltf2", convertedFileName.string());
+
+		m_GDTFAssets[fixtureName][file.name] = convertedFileName.string();
+		std::cout << "inserted:" << fixtureName << " input:" << file.name << " output:" << convertedFileName << std::endl;
 	}
 
 	void MVRParser::HandleXML(const File& file)

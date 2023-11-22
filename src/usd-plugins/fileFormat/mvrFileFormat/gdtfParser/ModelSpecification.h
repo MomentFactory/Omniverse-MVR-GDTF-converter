@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 namespace GDTF {
 
@@ -6,6 +7,14 @@ namespace GDTF {
     {
         std::string Name;
         std::string Id;
+        std::string File;
         std::string ConvertedFilePath;
     };
+
+    struct GDTFSpecification
+    {
+        std::string Name;
+        std::vector<ModelSpecification> Models;
+    };
+
 }

@@ -7,6 +7,7 @@
 #include <vector>
 #include <stack>
 #include <string>
+#include <map>
 #include <memory>
 
 namespace miniz_cpp2
@@ -59,10 +60,13 @@ namespace MVR {
 		std::stack<std::string> m_Errors;
 		std::vector<LayerSpecification> m_Layers;
 
+		// fixtureName<part, assetFile>
+		std::map<std::string, std::map<std::string, std::string>> m_GDTFAssets;
+
 		// File handling
 		void HandleZipFile(std::shared_ptr<ZipFile> zipFile);
 		void HandleXML(const File& fileName);
-		void HandleModel(const File& fileName);
+		void HandleModel(const File& fileName, const std::string& fixtureName);
 		void HandleGDTF(const File& fileName);
 
 		// Utilities

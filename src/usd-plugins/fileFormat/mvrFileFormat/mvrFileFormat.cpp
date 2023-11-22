@@ -34,6 +34,7 @@
 #include <pxr/base/gf/matrix3f.h>
 #include <pxr/base/gf/rotation.h>
 #include <pxr/base/gf/vec3f.h>
+#include <pxr/usd/usd/payloads.h>
 
 #include "mvrParser/MVRParser.h"
 
@@ -154,6 +155,25 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CustomId"), pxr::SdfValueTypeNames->UInt).Set(fixture.CustomId);
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CastShadow"), pxr::SdfValueTypeNames->Bool).Set(fixture.CastShadows);
+
+			const auto& basePath = fixturePath.AppendChild(TfToken("Base"));
+			const auto& baseModelPath = basePath.AppendChild(TfToken("model"));
+			const auto& baseXform = UsdGeomXform::Define(stage, basePath);
+			const auto& baseModelXform = UsdGeomXform::Define(stage, baseModelPath);
+
+			const auto& yokePath = basePath.AppendChild(TfToken("Yoke"));
+			const auto& yokeModelPath = yokePath.AppendChild(TfToken("model"));
+			const auto& yokeXform = UsdGeomXform::Define(stage, yokePath);
+			const auto& yokeModelXform = UsdGeomXform::Define(stage, yokeModelPath);
+
+			const auto& bodyPath = yokePath.AppendChild(TfToken("Body"));
+			const auto& bodyModelPath = bodyPath.AppendChild(TfToken("model"));
+			const auto& bodyXform = UsdGeomXform::Define(stage, bodyPath);
+			const auto& bodyModelXform = UsdGeomXform::Define(stage, bodyModelPath);
+
+			bodyModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((fixture.Name + "/" + "Body.gltf")));
+			yokeModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((fixture.Name + "/" + "Yoke.gltf")));
+			baseModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((fixture.Name + "/" + "Base.gltf")));
 		}
 	}
 	
