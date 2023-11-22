@@ -22,6 +22,85 @@ This repository contains two separate extensions :
 
 Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
+# Build the FileFormat plugin
+
+### Retrieve Submodule
+
+`git submodule update --init`
+
+### Build DLL
+
+`build.bat`
+
+#### Build for USDView
+
+`source setenvwindows`
+
+Test with `usdview resources/scene.usda`
+
+#### Build for Omniverse 
+
+To switch to the nv_usd of Omniverse, it is required to edit the packman configuration file to: 
+
+```
+<project toolsVersion="5.6">
+  <dependency name="nv-usd" linkPath="../_build/usd-deps/nv-usd/${config}">
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-win64_py310_${config}-dev_omniverse" platforms="windows-x86_64" />
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-linux64_py310-centos_${config}-dev_omniverse" platforms="linux-x86_64" />
+    <package name="nv-usd" version="22.11.nv.0.2.1071.7d2f59ad-linux-aarch64_py310_${config}-dev_omniverse" platforms="linux-aarch64" />
+  </dependency>
+  <dependency name="python" linkPath="../_build/usd-deps/python">
+    <package name="python" version="3.10.13+nv1-${platform}" />
+  </dependency>
+</project>
+```
+Configuration for USD view
+
+```
+<project toolsVersion="5.6">
+  <dependency name="nv-usd" linkPath="../_build/usd-deps/nv-usd/${config}">
+    <package name="usd.py310.${platform}.usdview.${config}" version="0.23.05-tc.47+v23.05.b53573ea" />
+  </dependency>
+  <dependency name="python" linkPath="../_build/usd-deps/python">
+    <package name="python" version="3.10.13+nv1-${platform}" />
+  </dependency>
+</project>
+```
+
+### Insert DLL in built extension
+
+Once the build is complete, a dll should be available following this path :
+
+`_install/windows-x86_64/release/mvrFileFormat/lib/mvriFileFormat.dll`
+
+Simply copy this dll into the extension folder by running : 
+
+`cp _install/windows-x86_64/release/mvrFileFormat/lib/mvrFileFormat.dll exts/mf.ov.mvr_converter/plugin`
+
+### Build for Unreal 5.3
+
+Unreal 5.3 uses USD 23.02
+Use the following dependency
+```
+<dependency name="nv-usd" linkPath="../_build/usd-deps/nv-usd/${config}">
+    <package name="usd.py310.${platform}.usdview.${config}" version="0.23.02-tc.1+pxr-23.02-build-patch.9ed269df" />
+  </dependency>
+```
+- In your Unreal project, enable the USD Importer plugin
+- Create a subfolder in your Unreal Project ex : `MyProject/Content/USDPlugins`
+- Copy the plugInfo.json and the mvrFileFormat.dll at the root of this folder
+- Adapt the plugInfo.json :
+  - `"LibraryPath": "mvrFileFormat.dll"`
+  - `"ResourcePath": "."`,
+  - `"Root": "."`
+- Add the `MyProject/Content/USDPlugins` in Edit > Project Settings > USDImporter > Additional Plugin Directories
+
+Note.  
+Unreal is gonna complain about missing dll.
+Dirty fix is to add the following dll (take the one from packman) into the `...UE_5.3\Engine\Binaries\Win64`
+- `boost_python310-vc142-mt-x64-1_78.dll`
+- `python310.dll`
+
 # Sample files
 
 An [MVR sample file](./exts/mf.ov.mvr/sample/7-fixtures-sample.mvrt/) and a [GDTF sample file](./exts/mf.ov.gdtf/sample/Robe_Lighting@Robin_MMX_Blade@2023-07-25__Beam_revision.gdtf) are provided with this repository. 
