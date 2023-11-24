@@ -164,7 +164,7 @@ class GDTFImporter:
     def _add_beam_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
         for beam in beams:
             light = USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position_matrix(), beam.get_radius())
-            beam.apply_attributes_to_prim(light.GetPrim())
+            beam.apply_attributes_to_prim(light)
         stage.Save()
 
     def _add_default_light_to_hierarchy(stage: Usd.Stage, geometries: List[Geometry]):

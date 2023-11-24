@@ -1,6 +1,7 @@
+import math
 import xml.etree.ElementTree as ET
 
-from pxr import Usd, UsdGeom, Sdf
+from pxr import Usd, UsdGeom, UsdLux, Sdf
 
 from .filepathUtility import Filepath
 from .USDTools import USDTools
@@ -168,7 +169,19 @@ class Beam:
     def get_stage_path(self) -> str:
         return self._stage_path
 
-    def apply_attributes_to_prim(self, prim: Usd.Prim):
+    def get_intensity(self) -> float:
+        lumens = self._luminous_flux
+        radius = self._radius
+        if lumens is None:
+            return None
+        candela: float = lumens / 12.566
+        numerator = candela * 1000
+        denominator = 4 * math.pi * radius * radius
+        result = numerator / denominator
+        return result
+
+    def apply_attributes_to_prim(self, light: UsdLux):
+        prim: Usd.Prim = light.GetPrim()
         set_attribute_float_if_valid(prim, "BeamAngle", self._beam_angle)
         set_attribute_text_if_valid(prim, "BeamType", self._beam_type)
         set_attribute_int_if_valid(prim, "ColorRenderingIndex", self._color_rendering_index)
@@ -177,6 +190,7 @@ class Beam:
         set_attribute_text_if_valid(prim, "LampType", self._lamp_type)
         set_attribute_float_if_valid(prim, "LuminousFlux", self._luminous_flux)
         set_attribute_float_if_valid(prim, "PowerConsumption", self._power_consumption)
+        USDTools.set_light_attributes(light, self._beam_angle, self.get_intensity(), self._color_temperature)
 
 
 class FixtureAttributes:

@@ -99,6 +99,7 @@ class USDTools:
         rotation += Gf.Vec3d(-90, 0, 0)
         scale = Gf.Vec3d(radius * 2, radius * 2, 1)
         USDTools._set_light_xform(light, translation, rotation, scale)
+        USDTools._additional_default_attributes(light)
         return light
 
     def add_light_default(stage: Usd.Stage, path: str, height: float, diameter: float):
@@ -107,14 +108,36 @@ class USDTools:
         rotation = Gf.Vec3d(-90, 0, 0)
         scale = Gf.Vec3d(diameter, diameter, 1)
         USDTools._set_light_xform(light, translation, rotation, scale)
+        USDTools._additional_default_attributes(light)
+
+    def _additional_default_attributes(light: UsdLux):
+        prim = light.GetPrim()
+        prim.CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
+        light.CreateIntensityAttr().Set(60_000)
+        # if UsdLux.ShapingAPI.CanApply(prim):
+        UsdLux.ShapingAPI.Apply(prim)
 
     def _set_light_xform(light: UsdLux.DiskLight, translation: Gf.Vec3d, rotation: Gf.Vec3d, scale: Gf.Vec3d):
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(translation)
         light.AddRotateZYXOp().Set(rotation)
         light.AddScaleOp().Set(scale)
-        light.CreateIntensityAttr().Set(60_000)
-        light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
+
+    def set_light_attributes(light: UsdLux.DiskLight, beamAngle: float, intensity: float, colorTemp: float):
+        if colorTemp is not None:
+            light.GetEnableColorTemperatureAttr().Set(True)
+            light.GetColorTemperatureAttr().Set(colorTemp)
+        else:
+            light.GetEnableColorTemperatureAttr().Set(False)
+            light.GetColorTemperatureAttr().Set(6500)  # default value
+
+        if intensity is not None:
+            light.GetIntensityAttr().Set(intensity)
+
+        if beamAngle is not None:
+            prim: Usd.Prim = light.GetPrim()
+            shapingAPI = UsdLux.ShapingAPI(prim)
+            shapingAPI.GetShapingConeAngleAttr().Set(beamAngle)
 
     def compute_applied_scale(stage: Usd.Stage) -> float:
         gdtf_scale = 1  # GDTF dimensions are in meters
