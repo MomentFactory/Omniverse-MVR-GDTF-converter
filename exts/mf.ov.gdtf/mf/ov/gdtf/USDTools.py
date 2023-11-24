@@ -111,7 +111,7 @@ class USDTools:
     def _set_light_xform(light: UsdLux.DiskLight, translation: Gf.Vec3d, rotation: Gf.Vec3d, scale: Gf.Vec3d):
         light.ClearXformOpOrder()  # Prevent error when overwritting
         light.AddTranslateOp().Set(translation)
-        light.AddRotateYXZOp().Set(rotation)
+        light.AddRotateZYXOp().Set(rotation)
         light.AddScaleOp().Set(scale)
         light.CreateIntensityAttr().Set(60_000)
         light.GetPrim().CreateAttribute("visibleInPrimaryRay", Sdf.ValueTypeNames.Bool).Set(True)
