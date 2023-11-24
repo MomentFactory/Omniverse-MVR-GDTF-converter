@@ -123,7 +123,7 @@ class USDTools:
         light.AddRotateYXZOp().Set(rotation)
         light.AddScaleOp().Set(scale)
 
-    def set_light_attributes(light: UsdLux.DiskLight, beamAngle: float, luminousFlux: float, colorTemp: float):
+    def set_light_attributes(light: UsdLux.DiskLight, beamAngle: float, intensity: float, colorTemp: float):
         if colorTemp is not None:
             light.GetEnableColorTemperatureAttr().Set(True)
             light.GetColorTemperatureAttr().Set(colorTemp)
@@ -131,8 +131,8 @@ class USDTools:
             light.GetEnableColorTemperatureAttr().Set(False)
             light.GetColorTemperatureAttr().Set(6500)  # default value
 
-        if luminousFlux is not None:
-            light.GetIntensityAttr().Set(luminousFlux)
+        if intensity is not None:
+            light.GetIntensityAttr().Set(intensity)
 
         if beamAngle is not None:
             prim: Usd.Prim = light.GetPrim()
