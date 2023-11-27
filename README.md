@@ -101,6 +101,34 @@ Dirty fix is to add the following dll (take the one from packman) into the `...U
 - `boost_python310-vc142-mt-x64-1_78.dll`
 - `python310.dll`
 
+### Build for Blender 3.6.x or 4.0
+
+Waiting for a cleaner way to provide build support for Blender, here is a step by step. 
+Use the following dependency.
+
+```
+<dependency name="blender_usd" linkPath="../_build/usd-deps/nv-usd">
+    <package name="blender_usd" version="63380-py310-usd23.05-windows-x86_64"/>
+  </dependency>
+```
+In the `repo.toml`
+Modify the USD dependencies.
+```
+usd_lib_dependencies = [
+    "ms"
+]
+```
+
+Remove `%{config}` after `usd_root`
+
+```
+usd_root = "${root}/_build/usd-deps/nv-usd"
+```
+
+Copy the Plugin folder : `omniverse-mvr-extension/_install/windows-x86_64/release/mvrFileFormat` 
+
+into your Blender Plugin folder `BLENDER_ROOT/blender.shared/usd`
+
 # Sample files
 
 An [MVR sample file](./exts/mf.ov.mvr/sample/7-fixtures-sample.mvrt/) and a [GDTF sample file](./exts/mf.ov.gdtf/sample/Robe_Lighting@Robin_MMX_Blade@2023-07-25__Beam_revision.gdtf) are provided with this repository. 
