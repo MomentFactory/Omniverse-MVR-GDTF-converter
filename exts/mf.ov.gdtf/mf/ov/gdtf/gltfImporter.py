@@ -2,7 +2,6 @@ import logging
 import omni.client
 import os
 import subprocess
-import sys
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
