@@ -2,6 +2,7 @@ import logging
 import omni.client
 import os
 import subprocess
+import sys
 import tempfile
 from typing import List
 import xml.etree.ElementTree as ET
@@ -80,10 +81,14 @@ class GLTFImporter:
         my_env = os.environ.copy()
         my_env["PATH"] = path + '\\..\\' + os.pathsep + my_env['PATH']
         scriptPath = path + "\\..\\3dsConverterScript.py"
-        result = subprocess.run(["py", scriptPath, input, output], capture_output=True, env=my_env)
-        if result.returncode != 0:
+        try:
+            result = subprocess.run(["py", "-3.10", scriptPath, input, output], capture_output=True, env=my_env)
+            if result.returncode != 0:
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to convert 3ds file to gltf: {input}\nerror (Requires python 3.10): {result.stderr.decode('utf-8')}\nerror message: {result.stdout.decode('utf-8')}")
+        except Exception as e:
             logger = logging.getLogger(__name__)
-            logger.error(f"Failed to convert 3ds file to gltf: {input}\nerror: {result.stderr.decode('utf-8')}\nerror message: {result.stdout.decode('utf-8')}")
+            logger.error(f"Failed to convert 3ds file to gltf: {input}\n{e}")
 
     def _convert_gltf(models: List[Model], gdtf_output_dir):
         output_dir = gdtf_output_dir + "gltf/"
