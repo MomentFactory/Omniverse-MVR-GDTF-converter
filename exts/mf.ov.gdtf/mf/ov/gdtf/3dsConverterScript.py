@@ -7,7 +7,7 @@ def main():
 
     if len(sys.argv) <= 2:
         print("Need at least 2 arguments")
-        return
+        exit(1)
 
     from pyassimp import load, export
     inputFile = sys.argv[1]
