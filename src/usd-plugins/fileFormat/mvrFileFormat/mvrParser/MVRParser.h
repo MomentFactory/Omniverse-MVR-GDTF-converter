@@ -2,7 +2,7 @@
 
 #include "Fixture.h"
 
-
+#include "../gdtfParser/ModelSpecification.h"
 
 #include <vector>
 #include <stack>
@@ -53,12 +53,16 @@ namespace MVR {
 			return msg;
 		}
 
+		bool HasGDTFSpecification(const std::string& name) const;
+		GDTF::GDTFSpecification GetGDTFSpecification(const std::string& name);
+
 	private:
 		const std::string m_SceneDescriptionFileName = "GeneralSceneDescription.xml";
 		std::string m_TargetPath;
 
 		std::stack<std::string> m_Errors;
 		std::vector<LayerSpecification> m_Layers;
+		std::map<std::string, GDTF::GDTFSpecification> m_GDTFSpecifications;
 
 		// fixtureName<part, assetFile>
 		std::map<std::string, std::map<std::string, std::string>> m_GDTFAssets;
@@ -68,6 +72,7 @@ namespace MVR {
 		void HandleXML(const File& fileName);
 		void HandleModel(const File& fileName, const std::string& fixtureName);
 		void HandleGDTF(const File& fileName);
+
 
 		// Utilities
 		bool FileExists(const std::string& path) const;

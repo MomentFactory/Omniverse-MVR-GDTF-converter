@@ -53,7 +53,6 @@ namespace GDTF {
 		const std::string m_SceneDescriptionFileName = "GeneralSceneDescription.xml";
 
 		std::stack<std::string> m_Errors;
-		std::vector<ModelSpecification> m_Models;
 
 		// File handling
 		void HandleXML(const File& fileName);

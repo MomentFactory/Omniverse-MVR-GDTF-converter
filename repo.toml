@@ -27,6 +27,7 @@ private_headers = [
     "mvrParser/MVRParser.h",
     "gdtfParser/GdtfParser.h",
     "gdtfParser/ModelSpecification.h",
+    "gdtfParser/Device.h"
 ]
 cpp_files = [
     "mvrFileFormat.cpp",

@@ -1,5 +1,7 @@
+#pragma once
 #include <string>
 #include <vector>
+#include "Device.h"
 
 namespace GDTF {
 
@@ -15,6 +17,10 @@ namespace GDTF {
     {
         std::string Name;
         std::vector<ModelSpecification> Models;
+
+        GDTFMatrix BaseMatrix = GDTFMatrix();
+        GDTFMatrix BodyMatrix = GDTFMatrix();
+        GDTFMatrix YokeMatrix = GDTFMatrix();
     };
 
 }

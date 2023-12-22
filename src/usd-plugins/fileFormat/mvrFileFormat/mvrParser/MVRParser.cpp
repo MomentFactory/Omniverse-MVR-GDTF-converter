@@ -1,6 +1,5 @@
 #include "LayerFactory.h"
 #include "MVRParser.h"
-#include "../gdtfParser/ModelSpecification.h"
 
 #include "zip_file2.hpp"
 
@@ -20,6 +19,7 @@ using ZipInfoList = std::vector<ZipInfo>;
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <experimental/filesystem>
 
+
 namespace MVR {
 
 	std::vector<LayerSpecification> MVRParser::ParseMVRFile(const std::string& path)
@@ -30,7 +30,7 @@ namespace MVR {
 			return {};
 		}
 
-		m_TargetPath = path + "/../";
+		m_TargetPath = std::experimental::filesystem::temp_directory_path().string() + "/";
 
 		// We open the .mvr archive and parse the file tree and handle files
 		// by their file extension. XML, gltf, 3ds.
@@ -70,6 +70,38 @@ namespace MVR {
 		}
 	}
 
+	GDTF::GDTFMatrix StringToMatrix(const std::string& inputString)
+	{
+		std::string input = inputString;
+		size_t pos;
+		while ((pos = input.find("}{")) != std::string::npos) 
+		{
+			input.replace(pos, 2, " ");
+		}
+
+		for (char& c : input) 
+		{
+			if (c == ',' || c == ';') 
+			{
+				c = ' ';
+			}
+		}
+
+		GDTF::GDTFMatrix output;
+		std::istringstream iss(input);
+		for (int i = 0; i < 4; ++i) 
+		{
+			for (int j = 0; j < 4; ++j) 
+			{
+				if (!(iss >> output[i][j])) 
+				{
+				}
+			}
+		}
+
+		return output;
+	}
+
 	void MVRParser::HandleGDTF(const File& file)
 	{
 		std::cout << "Found GDTF archive." << std::endl;
@@ -79,7 +111,7 @@ namespace MVR {
 		std::map<std::string, std::vector<File>> fixtures;
 		std::vector<File> assetFiles;
 
-		GDTF::GDTFSpecification spec;
+		GDTF::GDTFSpecification spec{};
 		
 		for (const ZipInfo& info : zipFile->infolist())
 		{
@@ -114,11 +146,31 @@ namespace MVR {
 
 						spec.Models.push_back(modelSpec);
 					}
+
+					auto geometries = fixtureType->FirstChildElement("Geometries");
+
+					auto axisBase = geometries->FirstChildElement("Axis");
+					auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
+					
+					auto axisYoke = axisBase->FirstChildElement("Axis");
+					auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
+
+					auto axisBody = axisYoke->FirstChildElement("Axis");
+					auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
+
+					auto baseMatrix = StringToMatrix(axisBasePosition);
+					auto yokeMatrix = StringToMatrix(axisYokePosition);
+					auto bodyMatrix = StringToMatrix(axisBodyPosition);
+
+					spec.BaseMatrix = baseMatrix;
+					spec.BodyMatrix = bodyMatrix;
+					spec.YokeMatrix = yokeMatrix;
+
+					m_GDTFSpecifications[name] = spec;
 					break;
 				}
 				case FileType::MODEL:
 				{
-					
 					assetFiles.push_back(file);
 					break;
 				}
@@ -131,9 +183,21 @@ namespace MVR {
 		{
 			HandleModel(f, spec.Name);
 		}
+	}
 
-		// TODO: Read zip content and unzip.
-		//HandleZipFile(ZipFile(std::istringstream(fileContent)));
+	bool MVRParser::HasGDTFSpecification(const std::string& name) const
+	{
+		return m_GDTFSpecifications.find(name) != m_GDTFSpecifications.end();
+	}
+
+	GDTF::GDTFSpecification MVRParser::GetGDTFSpecification(const std::string& name)
+	{
+		if(!HasGDTFSpecification(name))
+		{
+			return {};
+		}
+
+		return m_GDTFSpecifications[name];
 	}
 
 	void MVRParser::HandleModel(const File& file, const std::string& fixtureName)
@@ -146,11 +210,10 @@ namespace MVR {
 		Assimp::Exporter exporter;
 
 		std::experimental::filesystem::path targetPath = m_TargetPath;
-
 		std::experimental::filesystem::path destination = targetPath.parent_path().append(fixtureName);
 		std::experimental::filesystem::create_directory(destination);
 
-		std::experimental::filesystem::path convertedFileName = destination.append((std::experimental::filesystem::path(file.name).stem().concat(".gltf").c_str()));
+		std::experimental::filesystem::path convertedFileName = destination.append(std::experimental::filesystem::path(file.name).stem().concat(".gltf").c_str());
 
 		exporter.Export(scene, "gltf2", convertedFileName.string());
 

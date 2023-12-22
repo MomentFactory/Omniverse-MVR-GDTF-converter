@@ -1,7 +1,10 @@
 #pragma once
+#include "../gdtfParser/ModelSpecification.h"
+
 #include <string>
 #include <vector>
 #include <array>
+#include <map>
 
 namespace MVR {
 
@@ -23,6 +26,8 @@ namespace MVR {
 		uint32_t CustomId;
 		std::vector<float> CieColor;
 		bool CastShadows;
+
+		GDTF::GDTFSpecification GDTFSpecifications;
 	};
 
 	class Fixture
