@@ -137,12 +137,14 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			// Rotation
 			GfRotation rotation = transform.ExtractRotation();
 			GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
-			GfVec3d rotate = euler;
+			GfVec3d rotate = GfVec3d(0, 0, 180) - euler; // we somehow have a complete 180 offset here.
 
 			// Set transform
 			auto fixtureXform = UsdGeomXformable(fixtureUsd);
 			fixtureXform.ClearXformOpOrder();
 			fixtureXform.AddTranslateOp().Set(translation * 0.1f);
+			fixtureXform.AddScaleOp().Set(GfVec3f(0.1, 0.1, 0.1));
+
 			fixtureXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:name"), pxr::SdfValueTypeNames->String).Set(fixture.Name);
@@ -174,7 +176,6 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			const auto& bodyXform = UsdGeomXform::Define(stage, bodyPath);
 			const auto& bodyModelXform = UsdGeomXform::Define(stage, bodyModelPath);
 
-			std::cout << "fixturename sname:" << fixture.Name << std::endl;
 			GDTF::GDTFSpecification gdtfSpec = parser.GetGDTFSpecification(fixture.Name);
 
 			const std::string& parentPath = std::experimental::filesystem::temp_directory_path().string();
@@ -182,10 +183,11 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			yokeModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + fixture.Name + "/" + "Yoke.gltf")));
 			baseModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + fixture.Name + "/" + "Base.gltf")));
 
-			if(parser.HasGDTFSpecification(fixture.Name))
+			if(!parser.HasGDTFSpecification(fixture.Name))
 			{
-				std::cout << " HAS SPECIFIACTION!!" << std::endl;
+				std::cout << " No MVR specification detected" << std::endl;
 			}
+
 			// BODY
 			GfMatrix4d bodyTransform = GfMatrix4d(
 				gdtfSpec.BodyMatrix[0][0], gdtfSpec.BodyMatrix[1][0], gdtfSpec.BodyMatrix[2][0], 0,
@@ -194,88 +196,53 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 				gdtfSpec.BodyMatrix[0][3], gdtfSpec.BodyMatrix[1][3], gdtfSpec.BodyMatrix[2][3], 1
 			);
 
-
-			for(int x = 0; x < 4; x++)
-			{
-				for(int y = 0; y < 4; y++)
-				{
-					std::cout << bodyTransform[x][y] << ", ";
-				}
-
-				std::cout << std::endl;
-			}
-
-
 			GfVec3d bodyTranslation = rotateMinus90deg * bodyTransform.ExtractTranslation();
 
-			std::cout << "body Translation: " << bodyTranslation << std::endl;
 			GfRotation bodyRotation = bodyTransform.ExtractRotation();
 			GfVec3d bodyEuler = bodyRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
 			GfVec3d bodyRotate = bodyEuler;
 
 			bodyXform.ClearXformOpOrder();
-			bodyXform.AddTranslateOp().Set(bodyTranslation);
-			bodyXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(bodyRotate);
+			bodyXform.AddTranslateOp().Set(bodyTranslation * 1000.0);
+			bodyXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(bodyRotate);
 			bodyXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
 
 			// YOKE
 			GfMatrix4d yokeTransform = GfMatrix4d(
-				gdtfSpec.YokeMatrix[0][0], gdtfSpec.YokeMatrix[1][0], gdtfSpec.YokeMatrix[2][0], gdtfSpec.YokeMatrix[3][0],
-				gdtfSpec.YokeMatrix[0][1], gdtfSpec.YokeMatrix[1][1], gdtfSpec.YokeMatrix[2][1], gdtfSpec.YokeMatrix[3][1],
-				gdtfSpec.YokeMatrix[0][2], gdtfSpec.YokeMatrix[1][2], gdtfSpec.YokeMatrix[2][2], gdtfSpec.YokeMatrix[3][2],
-				gdtfSpec.YokeMatrix[0][3], gdtfSpec.YokeMatrix[1][3], gdtfSpec.YokeMatrix[2][3], gdtfSpec.YokeMatrix[3][3]
+				gdtfSpec.YokeMatrix[0][0], gdtfSpec.YokeMatrix[1][0], gdtfSpec.YokeMatrix[2][0], 0,
+				gdtfSpec.YokeMatrix[0][1], gdtfSpec.YokeMatrix[1][1], gdtfSpec.YokeMatrix[2][1], 0,
+				gdtfSpec.YokeMatrix[0][2], gdtfSpec.YokeMatrix[1][2], gdtfSpec.YokeMatrix[2][2], 0,
+				gdtfSpec.YokeMatrix[0][3], gdtfSpec.YokeMatrix[1][3], gdtfSpec.YokeMatrix[2][3], 1
 			);
 
-			for(int x = 0; x < 4; x++)
-			{
-				for(int y = 0; y < 4; y++)
-				{
-					std::cout << yokeTransform[x][y] << ", ";
-				}
-
-				std::cout << std::endl;
-			}
-
-			GfVec3d yokeTranslation = yokeTransform.ExtractTranslation();
-			std::cout << "yoke Translation: " << yokeTranslation << std::endl;
+			GfVec3d yokeTranslation = rotateMinus90deg * yokeTransform.ExtractTranslation();
 			GfRotation yokeRotation = yokeTransform.ExtractRotation();
 			GfVec3d yokeEuler = yokeRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
 			GfVec3d yokeRotate = yokeEuler;
 
 			// Set transform
 			yokeXform.ClearXformOpOrder();
-			yokeXform.AddTranslateOp().Set(yokeTranslation);
-			yokeXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(yokeRotate);
+			yokeXform.AddTranslateOp().Set(yokeTranslation * 1000.0);
+			yokeXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(yokeRotate);
 			yokeXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
 
 			// BASE
 			GfMatrix4d baseTransform = GfMatrix4d(
-				gdtfSpec.BaseMatrix[0][0], gdtfSpec.BaseMatrix[1][0], gdtfSpec.BaseMatrix[2][0], gdtfSpec.BaseMatrix[3][0],
-				gdtfSpec.BaseMatrix[0][1], gdtfSpec.BaseMatrix[1][1], gdtfSpec.BaseMatrix[2][1], gdtfSpec.BaseMatrix[3][1],
-				gdtfSpec.BaseMatrix[0][2], gdtfSpec.BaseMatrix[1][2], gdtfSpec.BaseMatrix[2][2], gdtfSpec.BaseMatrix[3][2],
-				gdtfSpec.BaseMatrix[0][3], gdtfSpec.BaseMatrix[1][3], gdtfSpec.BaseMatrix[2][3], gdtfSpec.BaseMatrix[3][3]
+				gdtfSpec.BaseMatrix[0][0], gdtfSpec.BaseMatrix[1][0], gdtfSpec.BaseMatrix[2][0], 0,
+				gdtfSpec.BaseMatrix[0][1], gdtfSpec.BaseMatrix[1][1], gdtfSpec.BaseMatrix[2][1], 0,
+				gdtfSpec.BaseMatrix[0][2], gdtfSpec.BaseMatrix[1][2], gdtfSpec.BaseMatrix[2][2], 0,
+				gdtfSpec.BaseMatrix[0][3], gdtfSpec.BaseMatrix[1][3], gdtfSpec.BaseMatrix[2][3], 1
 			);
 
-			for(int x = 0; x < 4; x++)
-			{
-				for(int y = 0; y < 4; y++)
-				{
-					std::cout << baseTransform[x][y] << ", ";
-				}
-
-				std::cout << std::endl;
-			}
-
 			GfVec3d baseTranslation = rotateMinus90deg * baseTransform.ExtractTranslation();
-			std::cout << "base Translation: " << baseTranslation << std::endl;
 			GfRotation baseRotation = baseTransform.ExtractRotation();
 			GfVec3d baseEuler = baseRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
 			GfVec3d baseRotate = baseEuler;
 
 			// Set transform
 			baseXform.ClearXformOpOrder();
-			baseXform.AddTranslateOp().Set(baseTranslation);
-			baseXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(baseRotate);
+			baseXform.AddTranslateOp().Set(baseTranslation * 1000.0);
+			baseXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(baseRotate);
 			baseXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
 		}
 	}

@@ -81,12 +81,15 @@ namespace MVR {
 
 		for (char& c : input) 
 		{
-			if (c == ',' || c == ';') 
+			if (c == ',' || c == ';' || c == '{' || c == '}') 
 			{
 				c = ' ';
 			}
 		}
 
+		std::cout << "TEST EST" << std::endl;
+		std::cout << input << std::endl;
+		
 		GDTF::GDTFMatrix output;
 		std::istringstream iss(input);
 		for (int i = 0; i < 4; ++i) 
