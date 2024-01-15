@@ -127,25 +127,25 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			);
 
 			// Offset matrix
-			GfMatrix3d rotateMinus90deg = GfMatrix3d(1,  0, 0, 
-													 0,  0, 1, 
-													 0, -1, 0);
+			GfMatrix3d rotateMinus90deg = GfMatrix3d(1,  0,  0, 
+													 0,  0,  1, 
+													 0,  -1, 0);
 
 			// Translation
+			//transform = transform.GetTranspose();
 			GfVec3d translation = rotateMinus90deg * transform.ExtractTranslation();
 
 			// Rotation
 			GfRotation rotation = transform.ExtractRotation();
 			GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
-			GfVec3d rotate = GfVec3d(0, 0, 180) - euler; // we somehow have a complete 180 offset here.
+			GfVec3d rotate = rotateMinus90deg * euler; // we somehow have a complete 180 offset here.
 
 			// Set transform
 			auto fixtureXform = UsdGeomXformable(fixtureUsd);
 			fixtureXform.ClearXformOpOrder();
 			fixtureXform.AddTranslateOp().Set(translation * 0.1f);
 			fixtureXform.AddScaleOp().Set(GfVec3f(0.1, 0.1, 0.1));
-
-			fixtureXform.AddRotateZYXOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
+			fixtureXform.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:name"), pxr::SdfValueTypeNames->String).Set(fixture.Name);
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:uuid"), pxr::SdfValueTypeNames->String).Set(fixture.UUID);	

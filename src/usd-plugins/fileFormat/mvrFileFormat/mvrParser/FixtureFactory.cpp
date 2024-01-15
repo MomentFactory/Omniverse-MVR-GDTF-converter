@@ -58,7 +58,7 @@ namespace MVR {
 		// Replace "," with space
 		for (char& c : inputString) 
 		{
-			if (c == ',' || c == ';') 
+			if (c == ',' || c == ';' || c == '{' || c == '}') 
 			{
 				c = ' ';
 			}
