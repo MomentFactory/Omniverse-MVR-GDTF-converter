@@ -6,7 +6,7 @@
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usd/usdaFileFormat.h>
-
+#include <pxr/usd/usdLux/diskLight.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/scope.h>
 #include <pxr/usd/usdGeom/camera.h>
@@ -48,63 +48,13 @@ namespace GDTF
                                                 0,  0,  1, 
                                                 0,  -1, 0);
 
+        const std::string& parentPath = std::experimental::filesystem::temp_directory_path().string();
+
         const auto& basePath = xformPath.AppendChild(TfToken("Base"));
         const auto& baseModelPath = basePath.AppendChild(TfToken("model"));
         const auto& baseXform = UsdGeomXform::Define(stage, basePath);
         const auto& baseModelXform = UsdGeomXform::Define(stage, baseModelPath);
-
-        const auto& yokePath = basePath.AppendChild(TfToken("Yoke"));
-        const auto& yokeModelPath = yokePath.AppendChild(TfToken("model"));
-        const auto& yokeXform = UsdGeomXform::Define(stage, yokePath);
-        const auto& yokeModelXform = UsdGeomXform::Define(stage, yokeModelPath);
-
-        const auto& bodyPath = yokePath.AppendChild(TfToken("Body"));
-        const auto& bodyModelPath = bodyPath.AppendChild(TfToken("model"));
-        const auto& bodyXform = UsdGeomXform::Define(stage, bodyPath);
-        const auto& bodyModelXform = UsdGeomXform::Define(stage, bodyModelPath);
-
-        const std::string& parentPath = std::experimental::filesystem::temp_directory_path().string();
-        bodyModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + spec.Name + "/" + "Body.gltf")));
-        yokeModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + spec.Name + "/" + "Yoke.gltf")));
         baseModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + spec.Name + "/" + "Base.gltf")));
-
-        // BODY
-        GfMatrix4d bodyTransform = GfMatrix4d(
-            spec.BodyMatrix[0][0], spec.BodyMatrix[1][0], spec.BodyMatrix[2][0], 0,
-            spec.BodyMatrix[0][1], spec.BodyMatrix[1][1], spec.BodyMatrix[2][1], 0,
-            spec.BodyMatrix[0][2], spec.BodyMatrix[1][2], spec.BodyMatrix[2][2], 0,
-            spec.BodyMatrix[0][3], spec.BodyMatrix[1][3], spec.BodyMatrix[2][3], 1
-        );
-
-        GfVec3d bodyTranslation = rotateMinus90deg * bodyTransform.ExtractTranslation();
-
-        GfRotation bodyRotation = bodyTransform.ExtractRotation();
-        GfVec3d bodyEuler = bodyRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
-        GfVec3d bodyRotate = bodyEuler;
-
-        bodyXform.ClearXformOpOrder();
-        bodyXform.AddTranslateOp().Set(bodyTranslation * 1000.0);
-        bodyXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(bodyRotate);
-        bodyXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
-
-        GfMatrix4d yokeTransform = GfMatrix4d(
-            spec.YokeMatrix[0][0], spec.YokeMatrix[1][0], spec.YokeMatrix[2][0], 0,
-            spec.YokeMatrix[0][1], spec.YokeMatrix[1][1], spec.YokeMatrix[2][1], 0,
-            spec.YokeMatrix[0][2], spec.YokeMatrix[1][2], spec.YokeMatrix[2][2], 0,
-            spec.YokeMatrix[0][3], spec.YokeMatrix[1][3], spec.YokeMatrix[2][3], 1
-        );
-
-        GfVec3d yokeTranslation = rotateMinus90deg * yokeTransform.ExtractTranslation();
-        GfRotation yokeRotation = yokeTransform.ExtractRotation();
-        GfVec3d yokeEuler = yokeRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
-        GfVec3d yokeRotate = yokeEuler;
-
-        // Set transform
-        yokeXform.ClearXformOpOrder();
-        yokeXform.AddTranslateOp().Set(yokeTranslation * 1000.0);
-        yokeXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(yokeRotate);
-        yokeXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
-
         // BASE
         GfMatrix4d baseTransform = GfMatrix4d(
             spec.BaseMatrix[0][0], spec.BaseMatrix[1][0], spec.BaseMatrix[2][0], 0,
@@ -123,5 +73,134 @@ namespace GDTF
         baseXform.AddTranslateOp().Set(baseTranslation * 1000.0);
         baseXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(baseRotate);
         baseXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
+
+        const auto& yokePath = basePath.AppendChild(TfToken("Yoke"));
+        if(spec.TreeDepth > 1)
+        {
+            const auto& yokeModelPath = yokePath.AppendChild(TfToken("model"));
+            const auto& yokeXform = UsdGeomXform::Define(stage, yokePath);
+            const auto& yokeModelXform = UsdGeomXform::Define(stage, yokeModelPath);
+            yokeModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + spec.Name + "/" + "Yoke.gltf")));
+
+            GfMatrix4d yokeTransform = GfMatrix4d(
+                spec.YokeMatrix[0][0], spec.YokeMatrix[1][0], spec.YokeMatrix[2][0], 0,
+                spec.YokeMatrix[0][1], spec.YokeMatrix[1][1], spec.YokeMatrix[2][1], 0,
+                spec.YokeMatrix[0][2], spec.YokeMatrix[1][2], spec.YokeMatrix[2][2], 0,
+                spec.YokeMatrix[0][3], spec.YokeMatrix[1][3], spec.YokeMatrix[2][3], 1
+            );
+
+            GfVec3d yokeTranslation = rotateMinus90deg * yokeTransform.ExtractTranslation();
+            GfRotation yokeRotation = yokeTransform.ExtractRotation();
+            GfVec3d yokeEuler = yokeRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
+            GfVec3d yokeRotate = yokeEuler;
+
+            // Set transform
+            yokeXform.ClearXformOpOrder();
+            yokeXform.AddTranslateOp().Set(yokeTranslation * 1000.0);
+            yokeXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(yokeRotate);
+            yokeXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
+
+            if(spec.TreeDepth == 2 && spec.HasBeam)
+            {
+                SdfPath lightPath = yokeModelPath.AppendChild(TfToken("Yoke"));
+                auto diskLight = UsdLuxDiskLight::Define(stage, lightPath);
+                auto lightXform = UsdGeomXformable(diskLight);
+                float heightOffset = 0.0f;
+
+                const auto modelSpecIt = std::find_if(spec.Models.begin(), spec.Models.end(), 
+                    [](const ModelSpecification& model) { 
+                        return model.Name == std::string("Beam"); 
+                    }
+                );
+
+                if(modelSpecIt != spec.Models.end())
+                {
+                    const ModelSpecification& modelSpec = *modelSpecIt;
+                    heightOffset = modelSpec.Height;
+                }
+
+                lightXform.ClearXformOpOrder();
+                lightXform.AddTranslateOp().Set(GfVec3d(0, -heightOffset * 0.5, 0) * 1000.0);
+                lightXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(GfVec3d(-90, 0, 0));
+                lightXform.AddScaleOp().Set(GfVec3f(spec.BeamRadius * 2.0, spec.BeamRadius * 2.0, 1));
+                diskLight.GetPrim().CreateAttribute(
+                    TfToken("intensity"), 
+                    SdfValueTypeNames->Float
+                ).Set(60000.0f);
+
+                diskLight.GetPrim().CreateAttribute(
+                    TfToken("visibleInPrimaryRay"), 
+                    SdfValueTypeNames->Bool
+                ).Set(true);
+            }
+        }
+
+        if(spec.TreeDepth > 2)
+        {
+            const auto& bodyPath = yokePath.AppendChild(TfToken("Body"));
+            const auto& bodyModelPath = bodyPath.AppendChild(TfToken("model"));
+            const auto& bodyXform = UsdGeomXform::Define(stage, bodyPath);
+            const auto& bodyModelXform = UsdGeomXform::Define(stage, bodyModelPath);
+            bodyModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + spec.Name + "/" + "Body.gltf")));
+
+            // BODY
+            GfMatrix4d bodyTransform = GfMatrix4d(
+                spec.BodyMatrix[0][0], spec.BodyMatrix[1][0], spec.BodyMatrix[2][0], 0,
+                spec.BodyMatrix[0][1], spec.BodyMatrix[1][1], spec.BodyMatrix[2][1], 0,
+                spec.BodyMatrix[0][2], spec.BodyMatrix[1][2], spec.BodyMatrix[2][2], 0,
+                spec.BodyMatrix[0][3], spec.BodyMatrix[1][3], spec.BodyMatrix[2][3], 1
+            );
+
+            GfVec3d bodyTranslation = rotateMinus90deg * bodyTransform.ExtractTranslation();
+
+            GfRotation bodyRotation = bodyTransform.ExtractRotation();
+            GfVec3d bodyEuler = bodyRotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
+            GfVec3d bodyRotate = bodyEuler;
+
+            bodyXform.ClearXformOpOrder();
+            bodyXform.AddTranslateOp().Set(bodyTranslation * 1000.0);
+            bodyXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(bodyRotate);
+            bodyXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
+
+            if(spec.TreeDepth == 3 && spec.HasBeam)
+            {
+                SdfPath lightPath = bodyPath.AppendChild(TfToken("Body"));
+                auto diskLight = UsdLuxDiskLight::Define(stage, lightPath);
+                auto lightXform = UsdGeomXformable(diskLight);
+
+                float heightOffset = 0.0f;
+                const auto modelSpecIt = std::find_if(spec.Models.begin(), spec.Models.end(), 
+                    [](const ModelSpecification& model) { 
+                        return model.Name == std::string("Body"); 
+                    }
+                );
+
+                if(modelSpecIt != spec.Models.end())
+                {
+                    const ModelSpecification& modelSpec = *modelSpecIt;
+                    heightOffset = modelSpec.Height;
+                }
+
+                std::cout << "found offset:" << std::to_string(heightOffset) << std::endl;
+
+                lightXform.ClearXformOpOrder();
+                lightXform.AddTranslateOp().Set(GfVec3d(0, -heightOffset * 0.5, 0) * 1000.0);
+                lightXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(GfVec3d(-90, 0, 0));
+                lightXform.AddScaleOp().Set(GfVec3f(spec.BeamRadius * 2.0, spec.BeamRadius * 2.0, 1));
+                diskLight.GetPrim().CreateAttribute(
+                    TfToken("intensity"), 
+                    SdfValueTypeNames->Float
+                ).Set(60000.0f);
+
+                diskLight.GetPrim().CreateAttribute(
+                    TfToken("visibleInPrimaryRay"), 
+                    SdfValueTypeNames->Bool
+                ).Set(true);
+
+            }
+        }
+
+
+
     }
 }

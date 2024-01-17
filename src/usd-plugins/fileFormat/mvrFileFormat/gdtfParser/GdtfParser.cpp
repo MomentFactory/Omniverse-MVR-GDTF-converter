@@ -188,27 +188,59 @@ namespace GDTF {
 						modelSpec.Name = model->FindAttribute("Name")->Value();
 						modelSpec.File = model->FindAttribute("File")->Value();
 
+						model->QueryFloatAttribute("Length", &modelSpec.Length);
+						model->QueryFloatAttribute("Height", &modelSpec.Height);
+
+						std::cout << "found height:" << modelSpec.Height << std::endl;
 						spec.Models.push_back(modelSpec);
 					}
 
-					auto geometries = fixtureType->FirstChildElement("Geometries");
-
-					auto axisBase = geometries->FirstChildElement("Axis");
-					auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
+					int depth = 0;
 					
-					auto axisYoke = axisBase->FirstChildElement("Axis");
-					auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
+					auto geometries = fixtureType->FirstChildElement("Geometries");
+					auto axisBase = geometries->FirstChildElement("Axis");
+					if(axisBase != nullptr)
+					{
+						auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
+						spec.BaseMatrix = StringToMatrix(axisBasePosition);
 
-					auto axisBody = axisYoke->FirstChildElement("Axis");
-					auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
+						auto axisYoke = axisBase->FirstChildElement("Axis");
+						if(axisYoke != nullptr)
+						{
+							auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
+							spec.YokeMatrix = StringToMatrix(axisYokePosition);
+							
+							auto axisBody = axisYoke->FirstChildElement("Axis");
+							if(axisBody != nullptr)
+							{
+								auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
+								spec.BodyMatrix = StringToMatrix(axisBodyPosition);
+								depth++;
 
-					auto baseMatrix = StringToMatrix(axisBasePosition);
-					auto yokeMatrix = StringToMatrix(axisYokePosition);
-					auto bodyMatrix = StringToMatrix(axisBodyPosition);
+								auto beam = axisBody->FirstChildElement("Beam");
+								if(beam != nullptr)
+								{
+									// Has beam
+									spec.HasBeam = true;
+									auto beamPosition = beam->FindAttribute("Position")->Value();
+									spec.BeamMatrix = StringToMatrix(beamPosition);
+									float beamRadius = 0.0f;
+									if(!beam->QueryFloatAttribute("BeamRadius", &beamRadius))
+									{
+										// Failed to find beamRadius.
+									}
 
-					spec.BaseMatrix = baseMatrix;
-					spec.BodyMatrix = bodyMatrix;
-					spec.YokeMatrix = yokeMatrix;
+									spec.BeamRadius = beamRadius;
+								}
+							}
+
+							depth++;
+						}
+
+						depth++;
+					}
+
+					spec.TreeDepth = depth;
 					break;
 				}
 				case FileType::MODEL:

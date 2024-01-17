@@ -11,6 +11,8 @@ namespace GDTF {
         std::string Id;
         std::string File;
         std::string ConvertedFilePath;
+        float Height = 0.0f;
+        float Length = 0.0f;
     };
 
     struct GDTFSpecification
@@ -21,6 +23,11 @@ namespace GDTF {
         GDTFMatrix BaseMatrix = GDTFMatrix();
         GDTFMatrix BodyMatrix = GDTFMatrix();
         GDTFMatrix YokeMatrix = GDTFMatrix();
+
+        int TreeDepth = 0;
+        bool HasBeam = false;
+        float BeamRadius = 0.0f;
+        GDTFMatrix BeamMatrix = GDTFMatrix();
     };
 
 }
