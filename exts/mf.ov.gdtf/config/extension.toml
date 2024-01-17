@@ -1,9 +1,9 @@
 [package]
-version = "0.4.0"
+version = "1.0.0"
 
 title = "MF GDTF converter"
 description = "Support of GDTF (General Device Type Format) files in USD."
-authors = ["Moment Factory","Frederic Lestage"]
+authors = ["Moment Factory", "Frederic Lestage", "Antoine Pilote"]
 
 readme  = "docs/README.md"
 changelog = "docs/CHANGELOG.md"
@@ -26,7 +26,6 @@ order = -100
 "omni.kit.uiapp" = {}
 "omni.kit.tool.asset_importer" = {}
 
-
 [[python.module]]
 name = "mf.ov.gdtf"
 
@@ -35,3 +34,10 @@ requirements = [
     "unidecode"
 ]
 use_online_index = true
+
+[package.target]
+kit = ["105.1"]
+
+[package.writeTarget]
+kit = true
+python = false

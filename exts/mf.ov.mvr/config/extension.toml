@@ -1,9 +1,9 @@
 [package]
-version = "0.4.0"
+version = "1.0.0"
 
 title = "MF MVR converter"
 description = "Support of MVR (My Virtual Rig) files in USD."
-authors = ["Moment Factory","Frederic Lestage"]
+authors = ["Moment Factory","Frederic Lestage", "Antoine Pilote"]
 
 readme  = "docs/README.md"
 changelog = "docs/CHANGELOG.md"
@@ -22,10 +22,12 @@ reloadable = false
 # Load at the start, load all schemas with order -100 (with order -1000 the USD libs are loaded)
 order = -100
 
+
 [dependencies]
 "mf.ov.gdtf" = {}
 "omni.kit.uiapp" = {}
 "omni.kit.tool.asset_importer" = {}
+
 
 [[python.module]]
 name = "mf.ov.mvr"
@@ -35,3 +37,10 @@ requirements = [
     "unidecode"
 ]
 use_online_index = true
+
+[package.target]
+kit = ["105.1"]
+
+[package.writeTarget]
+kit = true
+python = false
