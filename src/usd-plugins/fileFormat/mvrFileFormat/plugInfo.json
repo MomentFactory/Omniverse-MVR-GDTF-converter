@@ -2,13 +2,12 @@
     "Plugins": [
       {
         "Info": {
-
           "Types": {
             "MvrFileFormat": {
               "bases": [
                 "SdfFileFormat"
               ],
-              "displayName": "EDF Dynamic File Format",
+              "displayName": "MVR Dynamic File Format",
               "extensions": [
                 "mvr"
               ],

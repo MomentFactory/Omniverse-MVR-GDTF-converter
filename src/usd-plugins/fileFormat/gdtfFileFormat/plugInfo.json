@@ -2,22 +2,14 @@
     "Plugins": [
       {
         "Info": {
-          "SdfMetadata": {
-            "Usd_Triangle_SideLength": {
-                "type": "double",
-                "displayGroup": "Core",
-                "appliesTo": ["prims"],
-                "documentation:": "Length of the triangle side."
-            }
-        },
         "Types": {
-            "gdtfFileFormat": {
+            "GdtfFileFormat": {
               "bases": [
                 "SdfFileFormat"
               ],
               "displayName": "gdtf Dynamic File Format",
               "extensions": [
-                "xml"
+                "gdtf"
               ],
               "formatId": "gdtfFileFormat",
               "primary": true,

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "gdtfFileFormat.h"
-#include "tinyxml2.h"
 
 #include <pxr/pxr.h>
 
@@ -36,9 +35,18 @@
 
 #include <pxr/base/gf/matrix3f.h>
 #include <pxr/base/gf/vec3f.h>
+#include <pxr/base/gf/rotation.h>
+#include <pxr/usd/usd/payloads.h>
+
+#include "../mvrFileFormat/gdtfParser/GdtfParser.h"
+#include "gdtfUsdConverter.h"
 
 #include <fstream>
 #include <cmath>
+#include <iostream>
+
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -52,54 +60,6 @@ GdtfFileFormat::GdtfFileFormat() : SdfFileFormat(
 
 GdtfFileFormat::~GdtfFileFormat()
 {
-}
-
-// Examples for parameters and arguments to payload
-static const double defaultSideLengthValue = 1.0;
-
-static double _ExtractSideLengthFromContext(const PcpDynamicFileFormatContext& context)
-{
-    // Default sideLength.
-    double sideLength = defaultSideLengthValue;
-
-    VtValue value;
-    if (!context.ComposeValue(GdtfFileFormatTokens->SideLength,
-                              &value) ||
-        value.IsEmpty()) {
-        return sideLength;
-    }
-
-    if (!value.IsHolding<double>()) {
-       
-        return sideLength;
-    }
-
-    return value.UncheckedGet<double>();
-}
-
-static double
-_ExtractSideLengthFromArgs(const SdfFileFormat::FileFormatArguments& args)
-{
-    // Default sideLength.
-    double sideLength = defaultSideLengthValue;
-
-    // Find "sideLength" file format argument.
-    auto it = args.find(GdtfFileFormatTokens->SideLength);
-    if (it == args.end()) {
-        return sideLength;
-    }
-
-    // Try to convert the string value to the actual output value type.
-    double extractVal;
-    bool success = true;
-    extractVal = TfUnstringify<double>(it->second, &success);
-    if (!success) {
-        
-        return sideLength;
-    }
-
-    sideLength = extractVal;
-    return sideLength;
 }
 
 bool GdtfFileFormat::CanRead(const std::string& filePath) const
@@ -128,17 +88,22 @@ bool GdtfFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool
 {
 	// Do parsing here...
 	// TF_CODING_ERROR to throw errors
-
 	// Create a new anonymous layer and wrap a stage around it.
-	SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
+    PXR_NAMESPACE_USING_DIRECTIVE
+	if (!TF_VERIFY(layer))
+	{
+		return false;
+	}
+
+    SdfLayerRefPtr newLayer = SdfLayer::CreateAnonymous(".usd");
 	UsdStageRefPtr stage = UsdStage::Open(newLayer);
-	const auto& xformPath = SdfPath("/default_prim");
-	auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
-	stage->SetDefaultPrim(defaultPrim.GetPrim());
 
-	// TODO: Compose scene layer here
+	// Parse GDTF file
+    auto parser = GDTF::GDTFParser();
+    auto device = parser.ParseGDTFFile(resolvedPath);
 
-
+    // Write to stage
+    GDTF::ConvertToUsd(device, stage);
 
     // Copy contents into output layer.
     layer->TransferContent(newLayer);
@@ -158,42 +123,25 @@ bool GdtfFileFormat::WriteToStream(const SdfSpecHandle& spec, std::ostream& out,
 	return false;
 }
 
-/*
+bool GdtfFileFormat::_ShouldSkipAnonymousReload() const
+{
+	return false;
+}
+
+bool GdtfFileFormat::_ShouldReadAnonymousLayers() const
+{
+	return true;
+}
+
 void GdtfFileFormat::ComposeFieldsForFileFormatArguments(const std::string& assetPath, const PcpDynamicFileFormatContext& context, FileFormatArguments* args, VtValue* contextDependencyData) const
 {
-	 // Default sideLength.
-    double sideLength = 1.0;
-
-    VtValue value;
-    if (!context.ComposeValue(GdtfFileFormatTokens->SideLength,
-                              &value) ||
-        value.IsEmpty()) {
-
-    }
-
-    if (!value.IsHolding<double>()) {
-        // error;
-    }
-
-    double length;
-
-    (*args)[GdtfFileFormatTokens->SideLength] = TfStringify(sideLength);
 }
 
 bool GdtfFileFormat::CanFieldChangeAffectFileFormatArguments(const TfToken& field, const VtValue& oldValue, const VtValue& newValue, const VtValue& contextDependencyData) const
 {
-	// Check if the "sideLength" argument changed.
-    double oldLength = oldValue.IsHolding<double>()
-                           ? oldValue.UncheckedGet<double>()
-                           : 1.0;
-    double newLength = newValue.IsHolding<double>()
-                           ? newValue.UncheckedGet<double>()
-                           : 1.0;
-
-    return oldLength != newLength;
-
+	return true;
 }
-*/
+
 
 // these macros emit methods defined in the Pixar namespace
 // but not properly scoped, so we have to use the namespace
@@ -203,8 +151,7 @@ TF_DEFINE_PUBLIC_TOKENS(
 	((Id, "gdtfFileFormat"))
 	((Version, "1.0"))
 	((Target, "usd"))
-	((Extension, "xml"))
-	((SideLength, "Usd_Triangle_SideLength")) // change if you want arguments
+	((Extension, "gdtf"))
 );
 
 TF_REGISTRY_FUNCTION(TfType)

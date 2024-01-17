@@ -6,6 +6,60 @@ generate_plugin_buildfiles = true
 plugin_buildfile_format = "cmake"
 generate_root_buildfile = true
 
+[repo_usd.plugin.gdtfFileFormat]
+plugin_dir = "${root}/src/usd-plugins/fileFormat/gdtfFileFormat"
+install_root = "${root}/_install/%{platform}/%{config}/gdtfFileFormat"
+include_dir = "include/gdtfFileFormat"
+additional_include_dirs = [
+    "../../../../_build/usd-deps/nv_usd/%{config}/include/tbb",
+    "${root}/src/usd-plugins/fileFormat/mvrFileFormat/assimp/include"
+]
+public_headers = [
+    "api.h"
+]
+private_headers = [
+    "gdtfFileFormat.h",
+    "gdtfUsdConverter.h",
+    "../mvrFileFormat/gdtfParser/GdtfParser.h",
+    "tinyxml2.h"
+]
+preprocessor_defines = [
+    "GDTF_FILEFORMAT"
+]
+
+cpp_files = [
+    "gdtfFileFormat.cpp",
+    "gdtfUsdConverter.cpp",
+    "../mvrFileFormat/gdtfParser/GdtfParser.cpp",
+    "tinyxml2.cpp"
+]
+
+resource_files = [
+    "plugInfo.json"
+]
+
+ additional_library_dirs = [
+    "${root}/src/usd-plugins/fileFormat/mvrFileFormat"
+]
+
+additional_static_libs = [
+    "assimp",
+    "zlibstatic"
+]
+
+usd_lib_dependencies = [
+    "arch",
+    "tf",
+    "plug",
+    "vt",
+    "gf",
+    "sdf",
+    "js",
+    "pcp",
+    "usdGeom",
+    "usd",
+    "usdLux"
+]
 
 [repo_usd.plugin.mvrFileFormat]
 plugin_dir = "${root}/src/usd-plugins/fileFormat/mvrFileFormat"
@@ -27,7 +81,8 @@ private_headers = [
     "mvrParser/MVRParser.h",
     "gdtfParser/GdtfParser.h",
     "gdtfParser/ModelSpecification.h",
-    "gdtfParser/Device.h"
+    "gdtfParser/Device.h",
+    "../gdtfFileFormat/gdtfUsdConverter.h"
 ]
 cpp_files = [
     "mvrFileFormat.cpp",
@@ -37,6 +92,7 @@ cpp_files = [
     "mvrParser/MVRParser.cpp",
     "mvrParser/tinyxml2.cpp",
     "gdtfParser/GdtfParser.cpp",
+    "../gdtfFileFormat/gdtfUsdConverter.cpp"
 ]
 
 resource_files = [

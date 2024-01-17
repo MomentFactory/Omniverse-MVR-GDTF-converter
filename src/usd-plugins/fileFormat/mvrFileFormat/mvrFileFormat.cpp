@@ -37,6 +37,7 @@
 #include <pxr/usd/usd/payloads.h>
 
 #include "mvrParser/MVRParser.h"
+#include "../gdtfFileFormat/gdtfUsdConverter.h"
 
 #include <iostream>
 
@@ -119,6 +120,10 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			const auto& fixturePath = layerPath.AppendChild(TfToken(cleanFixtureName));
 			const auto& fixtureUsd = UsdGeomXform::Define(stage, fixturePath);
 
+			GDTF::GDTFSpecification gdtfSpec = parser.GetGDTFSpecification(fixture.Name);
+
+			GDTF::ConvertToUsd(gdtfSpec, stage, fixturePath.GetAsString());
+
 			GfMatrix4d transform = GfMatrix4d(
 				fixture.Matrix[0][0], fixture.Matrix[0][1], fixture.Matrix[0][2], 0,
 				fixture.Matrix[1][0], fixture.Matrix[1][1], fixture.Matrix[1][2], 0,
@@ -161,6 +166,7 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CastShadow"), pxr::SdfValueTypeNames->Bool).Set(fixture.CastShadows);
 
+			/*
 			const auto& basePath = fixturePath.AppendChild(TfToken("Base"));
 			const auto& baseModelPath = basePath.AppendChild(TfToken("model"));
 			const auto& baseXform = UsdGeomXform::Define(stage, basePath);
@@ -175,8 +181,6 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			const auto& bodyModelPath = bodyPath.AppendChild(TfToken("model"));
 			const auto& bodyXform = UsdGeomXform::Define(stage, bodyPath);
 			const auto& bodyModelXform = UsdGeomXform::Define(stage, bodyModelPath);
-
-			GDTF::GDTFSpecification gdtfSpec = parser.GetGDTFSpecification(fixture.Name);
 
 			const std::string& parentPath = std::experimental::filesystem::temp_directory_path().string();
 			bodyModelXform.GetPrim().GetPayloads().AddPayload(SdfPayload((parentPath + "/" + fixture.Name + "/" + "Body.gltf")));
@@ -244,6 +248,8 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			baseXform.AddTranslateOp().Set(baseTranslation * 1000.0);
 			baseXform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(baseRotate);
 			baseXform.AddScaleOp().Set(GfVec3f(1, 1, 1));
+
+			*/
 		}
 	}
 	

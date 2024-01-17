@@ -22,8 +22,7 @@
 
 #pragma once
 
-#ifndef MY_ZIP_FILE_H
-#define MY_ZIP_FILE_H
+
 
 #include <algorithm>
 #include <cstdint>
@@ -4974,18 +4973,21 @@ extern "C" {
   For more information, please refer to <http://unlicense.org/>
 */
 
+#ifndef MY_ZIP_FILE_H
+#define MY_ZIP_FILE_H
+
 namespace miniz_cpp2 {
     namespace detail {
 
 #ifdef _WIN32
-        char directory_separator = '\\';
-        char alt_directory_separator = '/';
+        static char directory_separator = '\\';
+        static char alt_directory_separator = '/';
 #else
-        char directory_separator = '/';
-        char alt_directory_separator = '\\';
+        static char directory_separator = '/';
+        static char alt_directory_separator = '\\';
 #endif
 
-        std::string join_path(const std::vector<std::string> &parts)
+        static std::string join_path(const std::vector<std::string> &parts)
         {
             std::string joined;
             std::size_t i = 0;
@@ -5001,7 +5003,7 @@ namespace miniz_cpp2 {
             return joined;
         }
 
-        std::vector<std::string> split_path(const std::string &path, char delim = directory_separator)
+        static std::vector<std::string> split_path(const std::string &path, char delim = directory_separator)
         {
             std::vector<std::string> split;
             std::string::size_type previous_index = 0;
@@ -5036,7 +5038,7 @@ namespace miniz_cpp2 {
             return split;
         }
 
-        uint32_t crc32buf(const char *buf, std::size_t len)
+        static uint32_t crc32buf(const char *buf, std::size_t len)
         {
             uint32_t oldcrc32 = 0xFFFFFFFF;
 
@@ -5097,7 +5099,7 @@ namespace miniz_cpp2 {
             return ~oldcrc32;
         }
 
-        tm safe_localtime(const time_t &t)
+        static tm safe_localtime(const time_t &t)
         {
 #ifdef _WIN32
             tm time;
@@ -5110,7 +5112,7 @@ namespace miniz_cpp2 {
 #endif
         }
 
-        std::size_t write_callback(void *opaque, std::uint64_t file_ofs, const void *pBuf, std::size_t n)
+        static std::size_t write_callback(void *opaque, std::uint64_t file_ofs, const void *pBuf, std::size_t n)
         {
             auto buffer = static_cast<std::vector<char> *>(opaque);
 

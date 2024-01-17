@@ -64,25 +64,16 @@ namespace MVR {
 		std::vector<LayerSpecification> m_Layers;
 		std::map<std::string, GDTF::GDTFSpecification> m_GDTFSpecifications;
 
-		// fixtureName<part, assetFile>
-		std::map<std::string, std::map<std::string, std::string>> m_GDTFAssets;
 
 		// File handling
 		void HandleZipFile(std::shared_ptr<ZipFile> zipFile);
 		void HandleXML(const File& fileName);
-		void HandleModel(const File& fileName, const std::string& fixtureName);
-		void HandleGDTF(const File& fileName);
-
 
 		// Utilities
 		bool FileExists(const std::string& path) const;
-
 		std::string GetFileExtension(const std::string& path);
 		FileType GetFileTypeFromExtension(const std::string& extension);
-
 		std::vector<std::string> StringSplit(const std::string& input, const char delimiter);
 
-		
 	};
-
 }

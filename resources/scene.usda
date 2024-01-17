@@ -8,7 +8,7 @@
 def Xform "World"
 {
     def "mvrPayload" (
-        payload = @./test.mvr@
+        payload = @./test.gdtf@
     )
     {
     }
