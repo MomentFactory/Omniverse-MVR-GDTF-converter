@@ -1,0 +1,27 @@
+{
+    "Plugins": [
+        {
+            "Info": {
+                "Types": {
+                    "GdtfFileFormat": {
+                        "bases": [
+                          "SdfFileFormat"
+                        ],
+                        "displayName": "GDTF Dynamic File Format",
+                        "extensions": [
+                          "gdtf"
+                        ],
+                        "formatId": "gdtfFileFormat",
+                        "primary": true,
+                        "target": "usd"
+                      }
+                }
+            },
+            "LibraryPath": "./gdtfFileFormat.dll",
+            "Name": "gdtfFileFormat",
+            "ResourcePath": "resources",
+            "Root": "..",
+            "Type": "library"
+        }
+    ]
+}

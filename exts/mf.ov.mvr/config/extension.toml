@@ -1,0 +1,37 @@
+[package]
+version = "0.4.0"
+
+title = "MF MVR converter"
+description = "Support of MVR (My Virtual Rig) files in USD."
+authors = ["Moment Factory","Frederic Lestage"]
+
+readme  = "docs/README.md"
+changelog = "docs/CHANGELOG.md"
+repository = "https://github.com/MomentFactory/Omniverse-MVR-GDTF-converter"
+
+category = "Rendering"
+keywords = ["MVR", "GDTF","Audiovisual","Lighting","Fixture"]
+
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+
+toggleable = false
+
+[core]
+reloadable = false
+# Load at the start, load all schemas with order -100 (with order -1000 the USD libs are loaded)
+order = -100
+
+[dependencies]
+"mf.ov.gdtf" = {}
+"omni.kit.uiapp" = {}
+"omni.kit.tool.asset_importer" = {}
+
+[[python.module]]
+name = "mf.ov.mvr"
+
+[python.pipapi]
+requirements = [
+    "unidecode"
+]
+use_online_index = true
