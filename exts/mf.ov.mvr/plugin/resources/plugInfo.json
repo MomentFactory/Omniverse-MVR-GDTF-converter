@@ -2,23 +2,23 @@
     "Plugins": [
       {
         "Info": {
-        "Types": {
-            "GdtfFileFormat": {
+          "Types": {
+            "MvrFileFormat": {
               "bases": [
                 "SdfFileFormat"
               ],
-              "displayName": "gdtf Dynamic File Format",
+              "displayName": "MVR Dynamic File Format",
               "extensions": [
-                "gdtf"
+                "mvr"
               ],
-              "formatId": "gdtfFileFormat",
+              "formatId": "mvrFileFormat",
               "primary": true,
               "target": "usd"
             }
           }
         },
-        "LibraryPath": "lib/gdtfFileFormat.dll",
-        "Name": "gdtfFileFormat",
+        "LibraryPath": "lib/mvrFileFormat.dll",
+        "Name": "mvrFileFormat",
         "ResourcePath": "resources",
         "Root": "..",
         "Type": "library"
