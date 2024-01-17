@@ -7,7 +7,7 @@ from zipfile import ZipFile
 from pxr import Gf, Sdf, Usd, UsdGeom
 
 from .filepathUtility import Filepath
-from .gdtfUtil import Model, Geometry, Beam
+from .gdtfUtil import Model, Geometry, Beam, FixtureAttributes
 from .gltfImporter import GLTFImporter
 from .USDTools import USDTools
 
@@ -51,6 +51,7 @@ class GDTFImporter:
         GDTFImporter._apply_gdtf_matrix(stage, geometries)
         GDTFImporter._add_light_to_hierarchy(stage, beams, geometries)
         GDTFImporter._apply_gltf_scale(stage, geometries)
+        GDTFImporter._set_general_attributes(stage, root)
 
         return url
 
@@ -142,7 +143,7 @@ class GDTFImporter:
             xform: UsdGeom.Xform = geometry.get_xform_parent()
             xform.ClearXformOpOrder()  # Prevent error when overwritting
             xform.AddTranslateOp().Set(translation)
-            xform.AddRotateYXZOp().Set(rotation)
+            xform.AddRotateZYXOp().Set(rotation)
             xform.AddScaleOp().Set(Gf.Vec3d(1, 1, 1))
 
         stage.Save()
@@ -162,7 +163,8 @@ class GDTFImporter:
 
     def _add_beam_to_hierarchy(stage: Usd.Stage, beams: List[Beam]):
         for beam in beams:
-            USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position_matrix(), beam.get_radius())
+            light = USDTools.add_beam(stage, beam.get_stage_path(), beam.get_position_matrix(), beam.get_radius())
+            beam.apply_attributes_to_prim(light)
         stage.Save()
 
     def _add_default_light_to_hierarchy(stage: Usd.Stage, geometries: List[Geometry]):
@@ -176,4 +178,10 @@ class GDTFImporter:
         light_stage_path = deepest_geom.get_stage_path() + "/Beam"
         model = deepest_geom.get_model()
         USDTools.add_light_default(stage, light_stage_path, model.get_height(), model.get_width())
+        stage.Save()
+
+    def _set_general_attributes(stage: Usd.Stage, root: ET.Element):
+        fixtureAttr = FixtureAttributes(root)
+        prim: Usd.Prim = USDTools.get_default_prim(stage)
+        fixtureAttr.apply_attributes_to_prim(prim)
         stage.Save()
