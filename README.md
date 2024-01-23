@@ -3,7 +3,7 @@
 This repository contains 2x extensions.
 Brings support of MVR and GDTF files to Omniverse and USD.
 
-GDTF (General Device Type Format) defines an asset format that collects  information about Audiovisual devices. It is currently centered on lighting fixtures and provide accurate digital twins of lighting devices from 100+ manufacturers.
+GDTF (General Device Type Format) defines an asset format that collects technical information about Audiovisual devices. It is currently centered on lighting fixtures and provide accurate digital twins of lighting devices from 100+ manufacturers.
 
 MVR (My Virtual Rig) is a scene format that can describe an complete rig of lights, using GDTF assets at its core while adding capabilities to define groups, layers, DMX address and more to allow lighting designer to build virtual replicas of their lighting rigs and enforce a single file format from show design to previz to operation.
 
@@ -247,3 +247,7 @@ Some notes on the properties:
 
 - [MVR and GDTF homepage with Fixture Library](https://gdtf-share.com/)
 - [Specifications Github repostory](https://github.com/mvrdevelopment/spec)
+
+# Known issues
+
+- Only lighting devices are supported, prefer for importing mvr file not contaning trusses for instance. It could lead to strange behaviors and crashes. 
