@@ -59,6 +59,7 @@ namespace GDTF
 
         SdfPath xformPath;
 
+        const bool from3ds = spec.ConvertedFrom3ds;
         const bool isOnlyGDTF = targetPrimPath.empty();
         if(isOnlyGDTF)
         {
@@ -70,7 +71,7 @@ namespace GDTF
             defaultPrim.ClearXformOpOrder();
             defaultPrim.AddTranslateOp();
             defaultPrim.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble);
-            defaultPrim.AddScaleOp().Set(GfVec3f(100.0f));
+            defaultPrim.AddScaleOp().Set(GfVec3f(from3ds ? 1.0f : 100.0f));
         }
         else
         {
@@ -95,7 +96,7 @@ namespace GDTF
         fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:OperatingTemperature:Low"), pxr::SdfValueTypeNames->Float).Set(spec.LowTemperature);
         fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:Weight"), pxr::SdfValueTypeNames->Float).Set(spec.Weight);
 
-        const bool from3ds = spec.ConvertedFrom3ds;
+        
         const float modelScaleFactor = spec.ConvertedFrom3ds ? 0.001f : 1.0f;
         const float modelBaseRotateAngle = from3ds ? -90.0f : 0.0f;
 
@@ -113,8 +114,6 @@ namespace GDTF
             }
 
             geoPath = geoPath.AppendChild(TfToken(CleanNameForUSD(geometry.Name)));
-
-
 
             if(!geometry.isBeam)
             {
@@ -193,9 +192,21 @@ namespace GDTF
                     heightOffset = modelSpec.Height * -0.5f;
                 }
 
+                GfMatrix4d transform = GfMatrix4d(
+                    geometry.Transform[0][0], geometry.Transform[1][0], geometry.Transform[2][0], 0,
+                    geometry.Transform[0][1], geometry.Transform[1][1], geometry.Transform[2][1], 0,
+                    geometry.Transform[0][2], geometry.Transform[1][2], geometry.Transform[2][2], 0,
+                    geometry.Transform[0][3], geometry.Transform[1][3], geometry.Transform[2][3], 1
+                );
+
+                
+                GfRotation rotation =  transform.GetTranspose().ExtractRotation();
+                GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
+                GfVec3d rotate = (rotateMinus90deg * euler) + GfVec3d(-90, 0, 0);
+
                 lightXform.ClearXformOpOrder();
                 lightXform.AddTranslateOp().Set(GfVec3d(0, heightOffset, 0));
-                lightXform.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble).Set(GfVec3d(-90, 0, 0));
+                lightXform.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
                 lightXform.AddScaleOp().Set(GfVec3f(spec.BeamRadius * 2.0, spec.BeamRadius * 2.0, 1));
                 diskLight.GetPrim().CreateAttribute(
                     TfToken("intensity"), 
