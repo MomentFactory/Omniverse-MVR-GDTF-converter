@@ -58,18 +58,26 @@ namespace GDTF
         PXR_NAMESPACE_USING_DIRECTIVE
 
         SdfPath xformPath;
-        if(targetPrimPath.empty())
+
+        const bool isOnlyGDTF = targetPrimPath.empty();
+        if(isOnlyGDTF)
         {
             xformPath = SdfPath("/default_prim");
             auto defaultPrim = UsdGeomXform::Define(stage, xformPath);
             stage->SetDefaultPrim(defaultPrim.GetPrim());
+
+            bool resetXform = false;
+            defaultPrim.ClearXformOpOrder();
+            defaultPrim.AddTranslateOp();
+            defaultPrim.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble);
+            defaultPrim.AddScaleOp().Set(GfVec3f(100.0f));
         }
         else
         {
             xformPath = SdfPath(targetPrimPath);
         }
 
-        GfMatrix3d rotateMinus90deg = GfMatrix3d(1,  0,  0, 
+        const GfMatrix3d rotateMinus90deg = GfMatrix3d(1,  0,  0, 
                                                 0,  0,  1, 
                                                 0,  -1, 0);
 
@@ -87,9 +95,9 @@ namespace GDTF
         fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:OperatingTemperature:Low"), pxr::SdfValueTypeNames->Float).Set(spec.LowTemperature);
         fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:Weight"), pxr::SdfValueTypeNames->Float).Set(spec.Weight);
 
-        bool from3ds = spec.ConvertedFrom3ds;
-        float modelScaleFactory = spec.ConvertedFrom3ds ? 0.001f : 1.0f;
-        float modelBaseRotateAngle = from3ds ? -90.0f : 0.0f;
+        const bool from3ds = spec.ConvertedFrom3ds;
+        const float modelScaleFactor = spec.ConvertedFrom3ds ? 0.001f : 1.0f;
+        const float modelBaseRotateAngle = from3ds ? -90.0f : 0.0f;
 
         if(spec.Name.empty())
         {
@@ -106,28 +114,29 @@ namespace GDTF
 
             geoPath = geoPath.AppendChild(TfToken(CleanNameForUSD(geometry.Name)));
 
-            const auto& xform = UsdGeomXform::Define(stage, geoPath);
 
-            GfMatrix4d transform = GfMatrix4d(
-                geometry.Transform[0][0], geometry.Transform[1][0], geometry.Transform[2][0], 0,
-                geometry.Transform[0][1], geometry.Transform[1][1], geometry.Transform[2][1], 0,
-                geometry.Transform[0][2], geometry.Transform[1][2], geometry.Transform[2][2], 0,
-                geometry.Transform[0][3], geometry.Transform[1][3], geometry.Transform[2][3], 1
-            );
-
-            GfVec3d translation = rotateMinus90deg * transform.ExtractTranslation();
-            GfRotation rotation = transform.GetTranspose().ExtractRotation();
-            GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
-            GfVec3d rotate = rotateMinus90deg * euler;
-
-            // Set transform
-            xform.ClearXformOpOrder();
-            xform.AddTranslateOp().Set(translation);
-            xform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
-            xform.AddScaleOp().Set(GfVec3f(1.0));
 
             if(!geometry.isBeam)
             {
+                const auto& xform = UsdGeomXform::Define(stage, geoPath);
+                GfMatrix4d transform = GfMatrix4d(
+                    geometry.Transform[0][0], geometry.Transform[1][0], geometry.Transform[2][0], 0,
+                    geometry.Transform[0][1], geometry.Transform[1][1], geometry.Transform[2][1], 0,
+                    geometry.Transform[0][2], geometry.Transform[1][2], geometry.Transform[2][2], 0,
+                    geometry.Transform[0][3], geometry.Transform[1][3], geometry.Transform[2][3], 1
+                );
+
+                GfVec3d translation = rotateMinus90deg * transform.ExtractTranslation();
+                GfRotation rotation = transform.GetTranspose().ExtractRotation();
+                GfVec3d euler = rotation.Decompose(GfVec3f::XAxis(), GfVec3f::YAxis(), GfVec3f::ZAxis());
+                GfVec3d rotate = rotateMinus90deg * euler;
+
+                // Set transform
+                xform.ClearXformOpOrder();
+                xform.AddTranslateOp().Set(translation);
+                xform.AddRotateYZXOp(UsdGeomXformOp::PrecisionDouble).Set(rotate);
+                xform.AddScaleOp().Set(GfVec3f(1.0));
+
                 const auto& modelPath = geoPath.AppendChild(TfToken("model"));
                 const auto& modelXform = UsdGeomXform::Define(stage, modelPath);
                 modelXform.AddTranslateOp().Set(GfVec3d(0));
@@ -136,7 +145,7 @@ namespace GDTF
                 auto scaleOp = modelXform.AddScaleOp();
                 if(from3ds)
                 {
-                    scaleOp.Set(GfVec3f(modelScaleFactory));
+                    scaleOp.Set(GfVec3f(modelScaleFactor));
                 }   
                 
                 std::string fileName = "";
@@ -158,20 +167,34 @@ namespace GDTF
                 auto lightXform = UsdGeomXformable(diskLight);
                 float heightOffset = 0.0f;
 
+                // We need to find the parent of the beam, we use the depth to do this search
+                // We fall back to the size of the beam if we cant find it.
+                std::string parentModelName = geometry.Model;
+                for(auto g : spec.Geometries)
+                {
+                    if(g.Depth == geometry.Depth - 1)
+                    {
+                        parentModelName = g.Model;
+                    }
+                }
+
+                // Find the corresponding model of the parent
                 const auto modelSpecIt = std::find_if(spec.Models.begin(), spec.Models.end(), 
-                    [](const ModelSpecification& model) { 
-                        return model.Name == std::string("Beam"); 
+                    [parentModelName](const ModelSpecification& model) 
+                    { 
+                        return model.Name == parentModelName; 
                     }
                 );
 
+                // If we find it, we use the height as the offset
                 if(modelSpecIt != spec.Models.end())
                 {
                     const ModelSpecification& modelSpec = *modelSpecIt;
-                    heightOffset = modelSpec.Height;
+                    heightOffset = modelSpec.Height * -0.5f;
                 }
 
                 lightXform.ClearXformOpOrder();
-                lightXform.AddTranslateOp().Set(GfVec3d(0, -heightOffset * 0.5, 0));
+                lightXform.AddTranslateOp().Set(GfVec3d(0, heightOffset, 0));
                 lightXform.AddRotateYXZOp(UsdGeomXformOp::PrecisionDouble).Set(GfVec3d(-90, 0, 0));
                 lightXform.AddScaleOp().Set(GfVec3f(spec.BeamRadius * 2.0, spec.BeamRadius * 2.0, 1));
                 diskLight.GetPrim().CreateAttribute(
