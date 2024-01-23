@@ -171,7 +171,7 @@ bool MvrFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool 
 			allCommands += "]";
 
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CustomCommands"), pxr::SdfValueTypeNames->String).Set(allCommands);
-
+			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:CIEColor"), pxr::SdfValueTypeNames->String).Set(fixture.CieColor);
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:FixtureID"), pxr::SdfValueTypeNames->UInt).Set(fixture.FixtureID);
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:UnitNumber"), pxr::SdfValueTypeNames->UInt).Set(fixture.UnitNumber);
 			fixtureUsd.GetPrim().CreateAttribute(TfToken("mf:mvr:FixtureTypeId"), pxr::SdfValueTypeNames->UInt).Set(fixture.FixtureTypeID);

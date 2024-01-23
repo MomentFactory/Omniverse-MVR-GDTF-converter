@@ -103,6 +103,12 @@ namespace MVR {
 			}
 		}
 
+		auto colorXml = node->FirstChildElement("Color");
+		if(colorXml && colorXml->GetText())
+		{
+			spec.CieColor = std::string(colorXml->GetText());
+		}
+
 		spec.Classing = std::string(node->FirstChildElement("Classing")->GetText());
 		
 		auto addresses = node->FirstChildElement("Addresses");

@@ -24,7 +24,7 @@ namespace MVR {
 		uint32_t UnitNumber = 0;;
 		uint32_t FixtureTypeID = 0;;
 		uint32_t CustomId = 0;;
-		std::vector<float> CieColor;
+		std::string CieColor;
 		bool CastShadows;
 
 		GDTF::GDTFSpecification GDTFSpecifications;
