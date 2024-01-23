@@ -80,6 +80,13 @@ namespace GDTF
         const auto& baseXform = UsdGeomXform::Define(stage, basePath);
         const auto& baseModelXform = UsdGeomXform::Define(stage, baseModelPath);
  
+        // Add GDTF custom properties to parent prim
+        auto fixturePrim = stage->GetPrimAtPath(xformPath);
+        fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:LegHeight"), pxr::SdfValueTypeNames->Float).Set(spec.LegHeight);
+        fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:OperatingTemperature:High"), pxr::SdfValueTypeNames->Float).Set(spec.HighTemperature);
+        fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:OperatingTemperature:Low"), pxr::SdfValueTypeNames->Float).Set(spec.LowTemperature);
+        fixturePrim.GetPrim().CreateAttribute(TfToken("mf:gdtf:Weight"), pxr::SdfValueTypeNames->Float).Set(spec.Weight);
+
         bool from3ds = spec.ConvertedFrom3ds;
         float modelScaleFactory = spec.ConvertedFrom3ds ? 0.001f : 1.0f;
         float modelBaseRotateAngle = from3ds ? -90.0f : 0.0f;
