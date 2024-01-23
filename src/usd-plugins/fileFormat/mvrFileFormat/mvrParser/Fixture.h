@@ -20,10 +20,10 @@ namespace MVR {
 		std::vector<std::string> CustomCommands;
 		std::string Classing;
 		std::vector<std::string> Addresses;
-		uint32_t FixtureID;
-		uint32_t UnitNumber;
-		uint32_t FixtureTypeID;
-		uint32_t CustomId;
+		uint32_t FixtureID = 0;
+		uint32_t UnitNumber = 0;;
+		uint32_t FixtureTypeID = 0;;
+		uint32_t CustomId = 0;;
 		std::vector<float> CieColor;
 		bool CastShadows;
 

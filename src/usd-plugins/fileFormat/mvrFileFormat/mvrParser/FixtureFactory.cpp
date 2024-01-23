@@ -103,8 +103,8 @@ namespace MVR {
 			}
 		}
 
-		spec.Classing = GetAttribute<std::string>(node, "Classing");;
-
+		spec.Classing = std::string(node->FirstChildElement("Classing")->GetText());
+		
 		auto addresses = node->FirstChildElement("Addresses");
 		if (addresses)
 		{
@@ -114,11 +114,45 @@ namespace MVR {
 			}
 		}
 
-		spec.FixtureID = GetAttribute<uint32_t>(node, "fixtureId");
-		spec.UnitNumber = GetAttribute<uint32_t>(node, "UnitNumber");
-		spec.FixtureID = GetAttribute<uint32_t>(node, "FixtureID");
-		spec.CustomId = GetAttribute<uint32_t>(node, "CustomId");
-		spec.CastShadows = GetAttribute<bool>(node, "CastShadow");
+		auto fixtureIdXml = node->FirstChildElement("FixtureID");
+		if(fixtureIdXml && fixtureIdXml->GetText())
+		{
+			const std::string content = std::string(fixtureIdXml->GetText());
+			if(!content.empty())
+			{
+				spec.FixtureID = static_cast<uint32_t>(std::stoul(content));
+			}
+		}
+		else
+		{
+			fixtureIdXml = node->FirstChildElement("fixtureId");
+			if(fixtureIdXml && fixtureIdXml->GetText())
+			{
+				const std::string content = fixtureIdXml->GetText();
+				if(!content.empty())
+				{
+					spec.FixtureID = static_cast<uint32_t>(std::stoul(content));
+				}
+			}
+		}
+
+		auto unitNumberXml = node->FirstChildElement("UnitNumber");
+		if(unitNumberXml && unitNumberXml->GetText())
+		{
+			spec.UnitNumber = std::stoul(unitNumberXml->GetText());
+		}
+
+		auto customIdXml = node->FirstChildElement("CustomId");
+		if(customIdXml && customIdXml->GetText())
+		{
+			spec.CustomId = std::stoul(customIdXml->GetText());
+		}
+
+		auto castShadowXml = node->FirstChildElement("CastShadow");
+		if(castShadowXml && castShadowXml->GetText())
+		{
+			spec.CastShadows = castShadowXml->GetText() == "true" ? true : false;
+		}
 
 		return spec;
 	}
