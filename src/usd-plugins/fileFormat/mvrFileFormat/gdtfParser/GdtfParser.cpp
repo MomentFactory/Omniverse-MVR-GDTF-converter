@@ -300,56 +300,6 @@ namespace GDTF {
 
 					HandleGDTFRecursive(geometries, spec, 0);
 
-					// auto axisBase = geometries->FirstChildElement("Axis");
-
-					// // This is an edge case where the first element is geometry instead of axis.
-					// if(!axisBase)
-					// {
-					// 	axisBase = geometries->FirstChildElement("Geometry");
-					// }
-
-					// if(axisBase != nullptr)
-					// {
-					// 	auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
-					// 	spec.BaseMatrix = StringToMatrix(axisBasePosition);
-
-					// 	auto axisYoke = axisBase->FirstChildElement("Axis");
-					// 	if(axisYoke != nullptr)
-					// 	{
-					// 		auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
-					// 		spec.YokeMatrix = StringToMatrix(axisYokePosition);
-							
-					// 		auto axisBody = axisYoke->FirstChildElement("Axis");
-					// 		if(axisBody != nullptr)
-					// 		{
-					// 			auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
-					// 			spec.BodyMatrix = StringToMatrix(axisBodyPosition);
-					// 			depth++;
-
-					// 			auto beam = axisBody->FirstChildElement("Beam");
-					// 			if(beam != nullptr)
-					// 			{
-					// 				// Has beam
-					// 				spec.HasBeam = true;
-					// 				auto beamPosition = beam->FindAttribute("Position")->Value();
-					// 				spec.BeamMatrix = StringToMatrix(beamPosition);
-					// 				float beamRadius = 0.0f;
-					// 				if(!beam->QueryFloatAttribute("BeamRadius", &beamRadius))
-					// 				{
-					// 					// Failed to find beamRadius.
-					// 				}
-
-					// 				spec.BeamRadius = beamRadius;
-					// 			}
-					// 		}
-
-					// 		depth++;
-					// 	}
-
-					// 	depth++;
-					// }
-
-					// spec.TreeDepth = depth;
 					break;
 				}
 				case FileType::MODEL:

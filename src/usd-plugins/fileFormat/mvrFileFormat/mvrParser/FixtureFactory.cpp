@@ -78,9 +78,6 @@ namespace MVR {
 			}
 		}
 
-
-		std::cout << "Matrix parser begin";
-
 		for (int i = 0; i < 4; ++i) 
 		{
 			for (int j = 0; j < 3; ++j) 
@@ -91,7 +88,6 @@ namespace MVR {
 			std::cout << std::endl;
 		}
 
-		std::cout << "Matrix parser end";
 		spec.Matrix = output;
 		
 		spec.GDTFSpec =	node->FirstChildElement("GDTFSpec")->GetText();

@@ -89,7 +89,7 @@ bool GdtfFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool
 	// Do parsing here...
 	// TF_CODING_ERROR to throw errors
 	// Create a new anonymous layer and wrap a stage around it.
-    PXR_NAMESPACE_USING_DIRECTIVE
+	PXR_NAMESPACE_USING_DIRECTIVE
 	if (!TF_VERIFY(layer))
 	{
 		return false;
@@ -101,12 +101,12 @@ bool GdtfFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool
 	// Parse GDTF file
     auto parser = GDTF::GDTFParser();
     GDTF::GDTFSpecification device = parser.ParseGDTFFile(resolvedPath);
-	
+
     // Write to stage
     GDTF::ConvertToUsd(device, stage);
 
-    // Copy contents into output layer.
-    layer->TransferContent(newLayer);
+	// Copy contents into output layer.
+	layer->TransferContent(newLayer);
 
 	return true;
 }

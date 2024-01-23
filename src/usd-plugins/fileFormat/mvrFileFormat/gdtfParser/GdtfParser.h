@@ -42,8 +42,6 @@ namespace GDTF {
 		GDTFParser() = default;
 		~GDTFParser() = default;
 
-		//std::vector<ModelSpecification> ParseGDTFParserFicle(const std::shared_ptr<ZipFile>& filepath);
-
 		GDTF::GDTFSpecification ParseGDTFFile(const std::string& path);
 		GDTF::GDTFSpecification ParseCompressed(std::shared_ptr<ZipFile> file, const std::string& zipFileName);
 
