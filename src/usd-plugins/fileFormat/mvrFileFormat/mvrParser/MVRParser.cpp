@@ -39,8 +39,6 @@ namespace MVR {
 		auto zipFile = std::make_shared<ZipFile>(filePath);
 		HandleZipFile(zipFile);
 
-		std::cout << "DONE" << std::endl;
-
 		return m_Layers;
 	}
 
@@ -61,9 +59,9 @@ namespace MVR {
 
 					auto zipFileReader = std::istringstream(file.content);
 					auto zipFile = std::make_shared<ZipFile>(zipFileReader);
-					auto spec = parser.ParseCompressed(zipFile);
+					auto spec = parser.ParseCompressed(zipFile, file.name);
 
-					m_GDTFSpecifications[spec.Name] = spec;
+					m_GDTFSpecifications[file.name] = spec;
 				}
 				break;
 			case FileType::XML:
@@ -80,14 +78,35 @@ namespace MVR {
 		return m_GDTFSpecifications.find(name) != m_GDTFSpecifications.end();
 	}
 
+	bool StringEndsWith(const std::string& input, const std::string& compare)
+	{
+		if(input.size() >= compare.size())
+		{
+			return (input.compare(input.length() - compare.length(), compare.length(), compare) == 0);
+		}
+
+		return false;
+	}
+
 	GDTF::GDTFSpecification MVRParser::GetGDTFSpecification(const std::string& name)
 	{
-		if(!HasGDTFSpecification(name))
+		auto fullName = name;
+		if(!StringEndsWith(fullName, ".gdtf"))
+		{
+			fullName += ".gdtf";
+		}
+
+		for(auto& s : m_GDTFSpecifications)
+		{
+			std::cout << s.first << std::endl;
+		}
+
+		if(!HasGDTFSpecification(fullName))
 		{
 			return {};
 		}
 
-		return m_GDTFSpecifications[name];
+		return m_GDTFSpecifications[fullName];
 	}
 
 	void MVRParser::HandleXML(const File& file)

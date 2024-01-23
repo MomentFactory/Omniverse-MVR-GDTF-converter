@@ -94,8 +94,8 @@ namespace MVR {
 		std::cout << "Matrix parser end";
 		spec.Matrix = output;
 		
-		spec.GDTFSpec = GetAttribute<std::string>(node, "GDTFSpec");
-		spec.GDTFMode = GetAttribute<std::string>(node, "GDTFMode");
+		spec.GDTFSpec =	node->FirstChildElement("GDTFSpec")->GetText();
+		spec.GDTFMode = node->FirstChildElement("GDTFMode")->GetText();
 
 		// Custom commands
 		auto customCommands = node->FirstChildElement("CustomCommands");

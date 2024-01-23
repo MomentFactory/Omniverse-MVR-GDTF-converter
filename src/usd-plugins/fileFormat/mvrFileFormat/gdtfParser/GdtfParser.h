@@ -8,6 +8,10 @@
 #include <memory>
 #include <map>
 
+namespace tinyxml2
+{
+	class XMLElement;
+}
 
 namespace miniz_cpp2
 {
@@ -41,7 +45,7 @@ namespace GDTF {
 		//std::vector<ModelSpecification> ParseGDTFParserFicle(const std::shared_ptr<ZipFile>& filepath);
 
 		GDTF::GDTFSpecification ParseGDTFFile(const std::string& path);
-		GDTF::GDTFSpecification ParseCompressed(std::shared_ptr<ZipFile> file);
+		GDTF::GDTFSpecification ParseCompressed(std::shared_ptr<ZipFile> file, const std::string& zipFileName);
 
 		inline const bool HasError() const { return m_Errors.size() > 1; }
 		const std::string PopError() 
@@ -65,6 +69,9 @@ namespace GDTF {
 		void HandleXML(const File& fileName);
 		void HandleModel(const File& file, const std::string& fixtureName);
 		GDTF::GDTFSpecification HandleGDTF(std::shared_ptr<ZipFile>& file);
+
+		void HandleGDTFRecursive(tinyxml2::XMLElement* element, GDTF::GDTFSpecification& spec, int depth);
+
 		// Utilities
 		bool FileExists(const std::string& path) const;
 
@@ -75,5 +82,6 @@ namespace GDTF {
 		std::map<std::string, std::map<std::string, std::string>> m_GDTFAssets;
 
 		std::string m_TargetPath;
+		std::string m_SpecName;
 	};
 }

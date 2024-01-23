@@ -100,8 +100,8 @@ bool GdtfFileFormat::Read(SdfLayer* layer, const std::string& resolvedPath, bool
 
 	// Parse GDTF file
     auto parser = GDTF::GDTFParser();
-    auto device = parser.ParseGDTFFile(resolvedPath);
-
+    GDTF::GDTFSpecification device = parser.ParseGDTFFile(resolvedPath);
+	
     // Write to stage
     GDTF::ConvertToUsd(device, stage);
 

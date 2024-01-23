@@ -90,23 +90,42 @@ namespace GDTF {
 		}
 
         m_TargetPath = std::experimental::filesystem::temp_directory_path().string() + "/";
+		m_SpecName = std::experimental::filesystem::path(filePath).filename().string();
 
 		auto zipFile = std::make_shared<ZipFile>(filePath);
-
-		return HandleGDTF(zipFile);
+		auto spec = HandleGDTF(zipFile);
+		spec.SpecName = std::experimental::filesystem::path(zipFile->get_filename()).filename().string();
+		return spec;
     }
 
-    GDTF::GDTFSpecification GDTFParser::ParseCompressed(std::shared_ptr<ZipFile> file)
+    GDTF::GDTFSpecification GDTFParser::ParseCompressed(std::shared_ptr<ZipFile> file, const std::string& zipFileName)
     {
         m_TargetPath = std::experimental::filesystem::temp_directory_path().string() + "/";
-		return HandleGDTF(file);
+		m_SpecName = std::experimental::filesystem::path(zipFileName).filename().string();
+
+		auto spec = HandleGDTF(file);
+		spec.SpecName = zipFileName;
+		return spec;
     }
+
+
+	bool StringEndsWith(const std::string& input, const std::string& compare)
+	{
+		if(input.size() >= compare.size())
+		{
+			return (input.compare(input.length() - compare.length(), compare.length(), compare) == 0);
+		}
+
+		return false;
+	}
 
     void GDTFParser::HandleModel(const File& file, const std::string& fixtureName)
 	{
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFileFromMemory(file.content.data(), file.content.size() , aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices,"EXTENTION");
 
+		bool from3ds = StringEndsWith(file.name, "3ds");
+
+		const aiScene* scene = importer.ReadFileFromMemory(file.content.data(), file.content.size() , aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices,"EXTENTION");
 		Assimp::Exporter exporter;
 
 		std::experimental::filesystem::path targetPath = m_TargetPath;
@@ -118,7 +137,6 @@ namespace GDTF {
 		exporter.Export(scene, "gltf2", convertedFileName.string());
 
 		m_GDTFAssets[fixtureName][file.name] = convertedFileName.string();
-		std::cout << "inserted:" << fixtureName << " input:" << file.name << " output:" << convertedFileName << std::endl;
 	}
 
     std::string GDTFParser::GetFileExtension(const std::string& fileName)
@@ -142,12 +160,81 @@ namespace GDTF {
 		{
 			return FileType::GDTF;
 		}
-		else if(fileExtension == "3ds")
+		else if(fileExtension == "3ds" || fileExtension == "glb" || fileExtension == "gltf")
 		{
 			return FileType::MODEL;
 		}
 
 		return FileType::UNKNOWN;
+	}
+
+	void GDTFParser::HandleGDTFRecursive(tinyxml2::XMLElement* element, GDTF::GDTFSpecification& spec, int depth)
+	{
+		if(depth >= 4)
+		{
+			return; // Avoid stack overflow
+		}
+
+		int itCount = 0;
+		for(auto* geometry = element->FirstChildElement(); geometry != nullptr; geometry = element->NextSiblingElement())
+		{
+			itCount++;
+
+			if(itCount > 8)
+			{
+				return;
+			}
+
+			const std::string elementName =  geometry->Name();
+			bool isBeam = elementName == "Beam";
+			bool isGeometry = elementName == "Geometry";
+			bool isAxis = elementName == "Axis";
+			bool isInventory = elementName == "Inventory";
+			bool isValid = isBeam || isGeometry || isAxis;
+			bool isModel = geometry->FindAttribute("Model");
+
+			if(!isValid || !isModel)
+				continue;
+
+			auto positionString = geometry->FindAttribute("Position")->Value();
+			auto position = StringToMatrix(positionString);
+
+			std::string name = geometry->FindAttribute("Name")->Value();
+			std::string model = geometry->FindAttribute("Model")->Value();
+
+			if(name == "Pigtail" || name == "pigtail" || model == "pigtail" || model == "Pigtail")
+			{
+				continue;
+			}
+
+			Geometry geometrySpec = {};
+			geometrySpec.Name = name;
+			geometrySpec.Model = model;
+			geometrySpec.Transform = position;
+			geometrySpec.Depth = depth;
+
+			if(isBeam)
+			{
+				geometrySpec.isBeam = true;
+				
+				auto beamPosition = geometry->FindAttribute("Position")->Value();
+				float beamRadius = 0.0f;
+				if(!geometry->QueryFloatAttribute("BeamRadius", &beamRadius))
+				{
+					// Failed to find beamRadius.
+				}
+
+				geometrySpec.beamRadius = beamRadius;
+
+				spec.BeamRadius = beamRadius;
+				spec.BeamMatrix = StringToMatrix(beamPosition);
+				spec.HasBeam = true;
+			}
+
+			spec.Geometries.push_back(geometrySpec);
+
+			HandleGDTFRecursive(geometry, spec, depth + 1);
+		}
 	}
 
     GDTF::GDTFSpecification GDTFParser::HandleGDTF(std::shared_ptr<ZipFile>& zipFile)
@@ -179,7 +266,14 @@ namespace GDTF {
 
 					auto fixtureType = root->FirstChildElement("FixtureType");
 					std::string name = (fixtureType->FindAttribute("Name"))->Value();
-					spec.Name = name;
+
+					if(name.empty())
+					{
+						name = fixtureType->FindAttribute("LongName")->Value();
+					}
+
+					spec.Name = std::string(name);
+
 					auto models = fixtureType->FirstChildElement("Models");
 
 					for(auto* model = models->FirstChildElement("Model"); model; model = model->NextSiblingElement())
@@ -188,63 +282,83 @@ namespace GDTF {
 						modelSpec.Name = model->FindAttribute("Name")->Value();
 						modelSpec.File = model->FindAttribute("File")->Value();
 
+						// Fallback if the XML doesnt contain a name
+						if(modelSpec.Name.empty())
+						{
+							modelSpec.Name = modelSpec.File;
+						}
+
 						model->QueryFloatAttribute("Length", &modelSpec.Length);
 						model->QueryFloatAttribute("Height", &modelSpec.Height);
 
-						std::cout << "found height:" << modelSpec.Height << std::endl;
 						spec.Models.push_back(modelSpec);
 					}
 
 					int depth = 0;
 					
 					auto geometries = fixtureType->FirstChildElement("Geometries");
-					auto axisBase = geometries->FirstChildElement("Axis");
-					if(axisBase != nullptr)
-					{
-						auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
-						spec.BaseMatrix = StringToMatrix(axisBasePosition);
 
-						auto axisYoke = axisBase->FirstChildElement("Axis");
-						if(axisYoke != nullptr)
-						{
-							auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
-							spec.YokeMatrix = StringToMatrix(axisYokePosition);
+					HandleGDTFRecursive(geometries, spec, 0);
+
+					// auto axisBase = geometries->FirstChildElement("Axis");
+
+					// // This is an edge case where the first element is geometry instead of axis.
+					// if(!axisBase)
+					// {
+					// 	axisBase = geometries->FirstChildElement("Geometry");
+					// }
+
+					// if(axisBase != nullptr)
+					// {
+					// 	auto axisBasePosition = axisBase->FindAttribute("Position")->Value();
+					// 	spec.BaseMatrix = StringToMatrix(axisBasePosition);
+
+					// 	auto axisYoke = axisBase->FirstChildElement("Axis");
+					// 	if(axisYoke != nullptr)
+					// 	{
+					// 		auto axisYokePosition = axisYoke->FindAttribute("Position")->Value();
+					// 		spec.YokeMatrix = StringToMatrix(axisYokePosition);
 							
-							auto axisBody = axisYoke->FirstChildElement("Axis");
-							if(axisBody != nullptr)
-							{
-								auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
-								spec.BodyMatrix = StringToMatrix(axisBodyPosition);
-								depth++;
+					// 		auto axisBody = axisYoke->FirstChildElement("Axis");
+					// 		if(axisBody != nullptr)
+					// 		{
+					// 			auto axisBodyPosition = axisBody->FindAttribute("Position")->Value();
+					// 			spec.BodyMatrix = StringToMatrix(axisBodyPosition);
+					// 			depth++;
 
-								auto beam = axisBody->FirstChildElement("Beam");
-								if(beam != nullptr)
-								{
-									// Has beam
-									spec.HasBeam = true;
-									auto beamPosition = beam->FindAttribute("Position")->Value();
-									spec.BeamMatrix = StringToMatrix(beamPosition);
-									float beamRadius = 0.0f;
-									if(!beam->QueryFloatAttribute("BeamRadius", &beamRadius))
-									{
-										// Failed to find beamRadius.
-									}
+					// 			auto beam = axisBody->FirstChildElement("Beam");
+					// 			if(beam != nullptr)
+					// 			{
+					// 				// Has beam
+					// 				spec.HasBeam = true;
+					// 				auto beamPosition = beam->FindAttribute("Position")->Value();
+					// 				spec.BeamMatrix = StringToMatrix(beamPosition);
+					// 				float beamRadius = 0.0f;
+					// 				if(!beam->QueryFloatAttribute("BeamRadius", &beamRadius))
+					// 				{
+					// 					// Failed to find beamRadius.
+					// 				}
 
-									spec.BeamRadius = beamRadius;
-								}
-							}
+					// 				spec.BeamRadius = beamRadius;
+					// 			}
+					// 		}
 
-							depth++;
-						}
+					// 		depth++;
+					// 	}
 
-						depth++;
-					}
+					// 	depth++;
+					// }
 
-					spec.TreeDepth = depth;
+					// spec.TreeDepth = depth;
 					break;
 				}
 				case FileType::MODEL:
 				{
+					if(StringEndsWith(file.name, "3ds"))
+					{
+						spec.ConvertedFrom3ds = true;
+					}
+
 					assetFiles.push_back(file);
 					break;
 				}
@@ -255,7 +369,7 @@ namespace GDTF {
 
         for(auto& f : assetFiles)
 		{
-			HandleModel(f, spec.Name);
+			HandleModel(f, m_SpecName);
 		}
 
         return spec;
