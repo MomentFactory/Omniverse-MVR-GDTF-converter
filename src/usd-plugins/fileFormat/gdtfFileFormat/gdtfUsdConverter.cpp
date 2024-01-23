@@ -139,7 +139,16 @@ namespace GDTF
                     scaleOp.Set(GfVec3f(modelScaleFactory));
                 }   
                 
-                std::string payloadPath = parentPath + "/" + spec.SpecName + "/" + geometry.Model + ".gltf";
+                std::string fileName = "";
+                for(auto m : spec.Models)
+                {
+                    if(m.Name == geometry.Model)
+                    {
+                        fileName = m.File;
+                    }
+                }
+
+                std::string payloadPath = parentPath + "/" + spec.SpecName + "/" + fileName + ".gltf";
                 modelXform.GetPrim().GetPayloads().AddPayload(SdfPayload(payloadPath));
             }
             else
@@ -174,6 +183,15 @@ namespace GDTF
                     TfToken("visibleInPrimaryRay"), 
                     SdfValueTypeNames->Bool
                 ).Set(true);
+
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:BeamAngle"), pxr::SdfValueTypeNames->Float).Set(spec.BeamAngle);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:BeamType"), pxr::SdfValueTypeNames->String).Set(spec.BeamType);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:ColorRenderingIndex"), pxr::SdfValueTypeNames->Int).Set(spec.ColorRenderingIndex);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:ColorTemperature"), pxr::SdfValueTypeNames->Float).Set(spec.ColorTemperature);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:FieldAngle"), pxr::SdfValueTypeNames->Float).Set(spec.FieldAngle);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:LampType"), pxr::SdfValueTypeNames->String).Set(spec.LampType);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:PowerConsumption"), pxr::SdfValueTypeNames->Float).Set(spec.PowerConsumption);
+                diskLight.GetPrim().CreateAttribute(TfToken("mf:gdtf:LuminousFlux"), pxr::SdfValueTypeNames->Float).Set(spec.LuminousFlux);
             }
         }
     }

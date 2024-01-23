@@ -47,9 +47,20 @@ namespace GDTF {
         GDTFMatrix YokeMatrix = GDTFMatrix();
 
         int TreeDepth = 0;
+
+        // Beam specific
         bool HasBeam = false;
         float BeamRadius = 0.0f;
         GDTFMatrix BeamMatrix = GDTFMatrix();
+
+        float BeamAngle = 0.0f;
+        std::string BeamType = "";
+        int ColorRenderingIndex = 0;
+        float ColorTemperature = 0.0f;
+        float FieldAngle = 0.0f;
+        std::string LampType = "";
+        float LuminousFlux = 0.0f;
+        float PowerConsumption = 0.0f;
     };
 
 }

@@ -176,7 +176,7 @@ namespace GDTF {
 		}
 
 		int itCount = 0;
-		for(auto* geometry = element->FirstChildElement(); geometry != nullptr; geometry = element->NextSiblingElement())
+		for(auto* geometry = element->FirstChildElement(); geometry != nullptr; geometry = geometry->NextSiblingElement())
 		{
 			itCount++;
 
@@ -190,7 +190,7 @@ namespace GDTF {
 			bool isGeometry = elementName == "Geometry";
 			bool isAxis = elementName == "Axis";
 			bool isInventory = elementName == "Inventory";
-			bool isValid = isBeam || isGeometry || isAxis;
+			bool isValid = (isBeam || isGeometry || isAxis) && !isInventory;
 			bool isModel = geometry->FindAttribute("Model") != nullptr;
 
 			if(!isValid || !isModel)
@@ -219,16 +219,53 @@ namespace GDTF {
 			{
 				geometrySpec.isBeam = true;
 				
-				auto beamPosition = geometry->FindAttribute("Position")->Value();
 				float beamRadius = 0.0f;
 				if(!geometry->QueryFloatAttribute("BeamRadius", &beamRadius))
 				{
 					// Failed to find beamRadius.
 				}
-
 				geometrySpec.beamRadius = beamRadius;
 
+				auto beamAngleXml = geometry->FindAttribute("BeamAngle")->Value();
+				if(!geometry->QueryFloatAttribute("BeamAngle", &spec.BeamAngle))
+				{
+					// Failed to find beamRadius.
+				}
+		
+				auto beamTypeXml = geometry->FindAttribute("BeamType")->Value();
+				spec.BeamType = beamTypeXml;
+				
+				int colorRenderingIndex = 0;
+				if(!geometry->QueryIntAttribute("ColorRenderingIndex", &spec.ColorRenderingIndex))
+				{
+				}
+				spec.ColorRenderingIndex = colorRenderingIndex;
+
+				if(!geometry->QueryFloatAttribute("ColorTemperature", &spec.ColorTemperature))
+				{
+				}
+
+				if(!geometry->QueryFloatAttribute("FieldAngle", &spec.FieldAngle))
+				{
+				}
+
+				auto lampType = geometry->FindAttribute("LampType");
+				if(lampType)
+				{
+					spec.LampType = lampType->Value();
+				}
+
+				if(!geometry->QueryFloatAttribute("LuminousFlux", &spec.LuminousFlux))
+				{
+				}
+
+				if(!geometry->QueryFloatAttribute("PowerConsumption", &spec.PowerConsumption))
+				{
+				}
+
 				spec.BeamRadius = beamRadius;
+				auto beamPosition = geometry->FindAttribute("Position")->Value();
+
 				spec.BeamMatrix = StringToMatrix(beamPosition);
 				spec.HasBeam = true;
 			}
