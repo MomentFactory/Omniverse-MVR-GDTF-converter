@@ -78,20 +78,19 @@ namespace MVR {
 			}
 		}
 
-		for (int i = 0; i < 4; ++i) 
-		{
-			for (int j = 0; j < 3; ++j) 
-			{
-				std::cout << std::to_string(output[i][j]) << " ";
-			}
+		spec.Matrix = output;
 
-			std::cout << std::endl;
+		auto gdtfSpecXml = node->FirstChildElement("GDTFSpec");
+		if(gdtfSpecXml && gdtfSpecXml->GetText())
+		{
+			spec.GDTFSpec = gdtfSpecXml->GetText();
 		}
 
-		spec.Matrix = output;
-		
-		spec.GDTFSpec =	node->FirstChildElement("GDTFSpec")->GetText();
-		spec.GDTFMode = node->FirstChildElement("GDTFMode")->GetText();
+		auto gdtfModeXml = node->FirstChildElement("GDTFMode");
+		if(gdtfModeXml && gdtfModeXml->GetText())
+		{
+			spec.GDTFMode = gdtfModeXml->GetText();
+		}
 
 		// Custom commands
 		auto customCommands = node->FirstChildElement("CustomCommands");
@@ -109,7 +108,11 @@ namespace MVR {
 			spec.CieColor = std::string(colorXml->GetText());
 		}
 
-		spec.Classing = std::string(node->FirstChildElement("Classing")->GetText());
+		auto classingXml = node->FirstChildElement("Classing");
+		if(classingXml && classingXml->GetText())
+		{
+			spec.Classing = std::string(classingXml->GetText());
+		}
 		
 		auto addresses = node->FirstChildElement("Addresses");
 		if (addresses)
