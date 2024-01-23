@@ -21,14 +21,38 @@
 #include <pxr/base/gf/rotation.h>
 #include <pxr/base/gf/vec3f.h>
 #include <pxr/usd/usd/payloads.h>
+#include <pxr/base/tf/stringUtils.h>
+#include <pxr/pxr.h>
+
+#include <pxr/base/tf/diagnostic.h>
+#include <pxr/base/tf/stringUtils.h>
+#include <pxr/base/tf/token.h>
 
 #include <iostream>
 
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #include <experimental/filesystem>
 
+
 namespace GDTF 
 {
+    std::string CleanNameForUSD(const std::string& name)
+    {
+        std::string cleanedName = name;
+        if(cleanedName.size() == 0)
+        {
+            return "Default";
+        }
+
+        if(cleanedName.size() == 1 && pxr::TfIsValidIdentifier(cleanedName))
+        {
+            // If we have an index as a name, we only need to add _ beforehand.
+            return CleanNameForUSD("_" + cleanedName);
+        }
+
+        return pxr::TfMakeValidIdentifier(cleanedName);
+    }
+
     void ConvertToUsd(const GDTFSpecification& spec, pxr::UsdStageRefPtr stage, const std::string& targetPrimPath)
     {
         PXR_NAMESPACE_USING_DIRECTIVE
@@ -73,7 +97,7 @@ namespace GDTF
                 continue;
             }
 
-            geoPath = geoPath.AppendChild(TfToken(geometry.Name));
+            geoPath = geoPath.AppendChild(TfToken(CleanNameForUSD(geometry.Name)));
 
             const auto& xform = UsdGeomXform::Define(stage, geoPath);
 

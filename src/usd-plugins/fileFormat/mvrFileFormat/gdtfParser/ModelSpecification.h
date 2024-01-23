@@ -31,6 +31,11 @@ namespace GDTF {
         std::string Name;
         std::string SpecName;
         
+        float LowTemperature = 0.0f;
+        float HighTemperature = 0.0f;
+        float LegHeight = 0.0f;
+        float Weight = 0.0f;
+
         bool ConvertedFrom3ds = false;
 
         std::vector<ModelSpecification> Models;

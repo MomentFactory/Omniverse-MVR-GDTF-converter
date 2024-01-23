@@ -191,7 +191,7 @@ namespace GDTF {
 			bool isAxis = elementName == "Axis";
 			bool isInventory = elementName == "Inventory";
 			bool isValid = isBeam || isGeometry || isAxis;
-			bool isModel = geometry->FindAttribute("Model");
+			bool isModel = geometry->FindAttribute("Model") != nullptr;
 
 			if(!isValid || !isModel)
 				continue;
@@ -201,6 +201,8 @@ namespace GDTF {
 
 			std::string name = geometry->FindAttribute("Name")->Value();
 			std::string model = geometry->FindAttribute("Model")->Value();
+
+			std::replace(name.begin(), name.end(), ' ', '_');
 
 			if(name == "Pigtail" || name == "pigtail" || model == "pigtail" || model == "Pigtail")
 			{
@@ -270,6 +272,47 @@ namespace GDTF {
 					if(name.empty())
 					{
 						name = fixtureType->FindAttribute("LongName")->Value();
+					}
+
+					auto physicalDescription = fixtureType->FirstChildElement("PhysicalDescriptions");
+					if(physicalDescription)
+					{
+						auto pdProp = physicalDescription->FirstChildElement("Properties");
+						if(pdProp)
+						{
+							auto temp = pdProp->FirstChildElement("OperatingTemperature");
+							auto highXml = temp->FindAttribute("High");
+							if(highXml)
+							{
+								spec.HighTemperature = std::atof(highXml->Value());
+							}
+
+							auto lowXml = temp->FindAttribute("Low");
+							if(lowXml)
+							{
+								spec.LowTemperature = std::atof(lowXml->Value());
+							}
+
+							auto weightXml = pdProp->FirstChildElement("Weight");
+							if(weightXml)
+							{
+								auto weightValueXml = weightXml->FindAttribute("Value");
+								if(weightValueXml)
+								{
+									spec.Weight = std::atof(weightValueXml->Value());
+								}
+							}
+
+							auto legHeightXml = pdProp->FirstChildElement("LegHeight");
+							if(legHeightXml)
+							{
+								auto legHeightValueXml = legHeightXml->FindAttribute("Value");
+								if(legHeightValueXml)
+								{
+									spec.LegHeight = std::atof(legHeightValueXml->Value());
+								}
+							}
+						}
 					}
 
 					spec.Name = std::string(name);
