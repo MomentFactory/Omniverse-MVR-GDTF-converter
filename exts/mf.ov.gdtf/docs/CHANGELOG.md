@@ -1,5 +1,10 @@
 # Changelog
 
+# [1.0.0] - 2024-24-1
+- Added native USD file format plugin for payload support.
+- Deprecated kit 104 and 105.0
+- Added Sample files for USDView
+
 # [0.4.0] - 2023-10-02
 
 # Added
