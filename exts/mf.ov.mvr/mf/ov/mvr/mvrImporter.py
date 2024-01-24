@@ -86,7 +86,7 @@ class MVRImporter:
 
                     xform.ClearXformOpOrder()  # Prevent error when overwritting
                     xform.AddTranslateOp().Set(translation)
-                    xform.AddRotateYXZOp().Set(rotate)
+                    xform.AddRotateZYXOp().Set(rotate)
                     # Scale Op is added in _add_gdtf_reference
 
                     fixture.apply_attributes_to_prim(xform.GetPrim())

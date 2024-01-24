@@ -1,0 +1,27 @@
+{
+    "Plugins": [
+      {
+        "Info": {
+        "Types": {
+            "GdtfFileFormat": {
+              "bases": [
+                "SdfFileFormat"
+              ],
+              "displayName": "gdtf Dynamic File Format",
+              "extensions": [
+                "gdtf"
+              ],
+              "formatId": "gdtfFileFormat",
+              "primary": true,
+              "target": "usd"
+            }
+          }
+        },
+        "LibraryPath": "@PLUG_INFO_LIBRARY_PATH@",
+        "Name": "gdtfFileFormat",
+        "ResourcePath": "@PLUG_INFO_RESOURCE_PATH@",
+        "Root": "@PLUG_INFO_ROOT@",
+        "Type": "library"
+      }
+    ]
+}

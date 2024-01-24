@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.0.0] - 2024-01-24
+- Added native OpenUSD file format plugin for payload support.
+- Fixed orientation and scale issues
+- Some light parameters are now applied to USD light (cone, color temp, intensity)
+- Deprecated kit 104 and 105.0
+- Added Sample files for USDView
+
 # [0.4.0] - 2023-10-02
 
 # Added
