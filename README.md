@@ -24,10 +24,6 @@ Simply search for `MF GDTF Converter` or `MF MVR Converter` and enable them.
 
 # Build the FileFormat plugin
 
-### Retrieve Submodule
-
-`git submodule update --init`
-
 ### Build DLL
 
 `build.bat`
@@ -67,15 +63,16 @@ Configuration for USD view
 </project>
 ```
 
-### Insert DLL in built extension
+### Building extension
 
-Once the build is complete, a dll should be available following this path :
 
-`_install/windows-x86_64/release/mvrFileFormat/lib/mvriFileFormat.dll`
+Once the build is complete, the FileFormat dlls should be located under:
 
-Simply copy this dll into the extension folder by running : 
+`exts/mf.ov.gdtf/plugin/lib/gdtfFileFormat.dll` 
 
-`cp _install/windows-x86_64/release/mvrFileFormat/lib/mvrFileFormat.dll exts/mf.ov.mvr_converter/plugin`
+and
+
+`exts/mf.ov.mvr/plugin/lib/mvrFileFormat.dll` 
 
 ### Build for Unreal 5.3
 
@@ -268,6 +265,7 @@ Some notes on the properties:
 # Known limitation
 
 - GDTF files using 3ds model are supported but will require python 3.10 cli installed on the host computer. 
+- Some MVR or GDTF files might fail to convert due to invalid or incomplete files.
 
 # Resources
 
