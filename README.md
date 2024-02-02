@@ -261,6 +261,7 @@ into your Blender Plugin folder `BLENDER_ROOT/blender.shared/usd`
 
 # Resources
 
+- Inspired by : [NVIDIA's usd-plugin-sample](https://github.com/NVIDIA-Omniverse/usd-plugin-samples/)
 - [MVR and GDTF homepage with Fixture Library](https://gdtf-share.com/)
 - [Specifications Github repostory](https://github.com/mvrdevelopment/spec)
 - [Gdtf.eu](https://gdtf.eu/docs/list-of-projects/)
