@@ -1,5 +1,5 @@
 [package]
-version = "1.0.0"
+version = "1.0.1"
 
 title = "MF GDTF converter"
 description = "Support of GDTF (General Device Type Format) files in USD."

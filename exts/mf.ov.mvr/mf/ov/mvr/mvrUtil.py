@@ -142,8 +142,9 @@ class Layer:
 
     def find_fixtures(self):
         childlist = self._node.find("ChildList")
-        fixtures = childlist.findall("Fixture")
-        self._fixtures = [Fixture(x) for x in fixtures]
+        if childlist is not None:
+            fixtures = childlist.findall("Fixture")
+            self._fixtures = [Fixture(x) for x in fixtures]
 
     def fixtures_len(self) -> int:
         return len(self._fixtures)
