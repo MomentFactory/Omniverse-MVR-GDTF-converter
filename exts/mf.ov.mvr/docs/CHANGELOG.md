@@ -1,5 +1,8 @@
 # Changelog
 
+# [1.0.1] - 2024-10-18
+- Fixed Null check issue for <ChildList>
+
 # [1.0.0] - 2024-01-24
 - Added native OpenUSD file format plugin for payload support.
 - Fixed orientation and scale issues

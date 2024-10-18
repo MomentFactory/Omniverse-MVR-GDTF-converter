@@ -144,7 +144,11 @@ namespace MVR {
 			auto layersXml = scene->FirstChildElement("Layers");
 			for (auto* layer = layersXml->FirstChildElement("Layer"); layer; layer = layer->NextSiblingElement())
 			{
-				layers.push_back(layerFactory.CreateSpecificationFromXML(layer));
+				auto layerSpec = layerFactory.CreateSpecificationFromXML(layer);
+				if (layerSpec.fixtures.size() > 0)
+				{
+					layers.push_back(layerFactory.CreateSpecificationFromXML(layer));
+				}
 			}
 
 			m_Layers = layers;
